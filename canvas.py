@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+import typing as tp
 
 class Canvas:
     def __init__(self):
@@ -21,15 +22,16 @@ class Canvas:
         # --- Pygame Font setup
         self.font = pygame.font.SysFont("Arial", 24)
 
-        self.draw_example_node()
+        self.draw_node("abc", pos=(200, 300), colour=(0,0,0), background=(0, 255, 0), x_border=40, y_border=10)
 
-    def draw_example_node(self):
-        text = "abc"
-        text_surface = self.font.render(text, True, (0, 0, 0), (0, 255, 0))
+    def draw_node(self, text: str, pos: tp.Tuple[int, int], colour: tp.Tuple[int, int, int], \
+                  background: tp.Tuple[int, int, int], x_border: int, y_border: int):
+        text_surface = self.font.render(text, True, colour, background)
         text_rect = text_surface.get_rect()
 
-        pygame.draw.rect(self.display_surf, (255, 255, 0), (200-25, 300-20, text_rect.width + 50, text_rect.height + 40))
-        self.display_surf.blit(text_surface, (200, 300))
+        pygame.draw.rect(self.display_surf, background, (pos[0]-x_border, pos[1]-y_border, \
+                                                         text_rect.width + x_border*2, text_rect.height + y_border*2))
+        self.display_surf.blit(text_surface, pos)
 
     def main_loop(self):
         running = True
