@@ -2,6 +2,30 @@ import pygame
 from pygame.locals import *
 import typing as tp
 
+class Node:
+    def __init__(self, text: str, font, pos: tp.Tuple[int, int], colour: tp.Tuple[int, int, int], \
+                 background: tp.Tuple[int, int, int], x_border: int, y_border: int):
+        self._background = background
+        self._pos = pos
+        self._text_surface = font.render(text, True, colour, background)
+
+        text_rect = self._text_surface.get_rect()
+        self._border_details = (pos[0]-x_border, pos[1]-y_border, \
+                               text_rect.width + x_border*2, text_rect.height + y_border*2)
+        self._center = (pos[0] + text_rect.width/2, pos[1] + text_rect.height/2)
+
+    def draw_on(self, surface):
+        pygame.draw.rect(surface, self._background, self._border_details)
+        surface.blit(self._text_surface, self._pos)
+
+    @property
+    def width(self) -> int:
+        return self.border_details[2]
+
+    @property
+    def height(self) -> int:
+        return self.border_details[3]
+
 class Canvas:
     def __init__(self):
         self.fps = 30
@@ -22,16 +46,8 @@ class Canvas:
         # --- Pygame Font setup
         self.font = pygame.font.SysFont("Arial", 24)
 
-        self.draw_node("abc", pos=(200, 300), colour=(0,0,0), background=(0, 255, 0), x_border=40, y_border=10)
-
-    def draw_node(self, text: str, pos: tp.Tuple[int, int], colour: tp.Tuple[int, int, int], \
-                  background: tp.Tuple[int, int, int], x_border: int, y_border: int):
-        text_surface = self.font.render(text, True, colour, background)
-        text_rect = text_surface.get_rect()
-
-        pygame.draw.rect(self.display_surf, background, (pos[0]-x_border, pos[1]-y_border, \
-                                                         text_rect.width + x_border*2, text_rect.height + y_border*2))
-        self.display_surf.blit(text_surface, pos)
+        n = Node("abc", self.font, pos=(200, 300), colour=(0,0,0), background=(0, 255, 0), x_border=40, y_border=10)
+        n.draw_on(self.display_surf)
 
     def main_loop(self):
         running = True
