@@ -16,8 +16,20 @@ class Canvas:
         # Background: a white rectangle the size of the screen
         self.default_background = pygame.Surface(self.display_surf.get_size()).convert()
         self.default_background.fill((255, 255, 255))
-
         self.display_surf.blit(self.default_background, (0, 0))
+
+        # --- Pygame Font setup
+        self.font = pygame.font.SysFont("Arial", 24)
+
+        self.draw_example_node()
+
+    def draw_example_node(self):
+        text = "abc"
+        text_surface = self.font.render(text, True, (0, 0, 0), (0, 255, 0))
+        text_rect = text_surface.get_rect()
+
+        pygame.draw.rect(self.display_surf, (255, 255, 0), (200-25, 300-20, text_rect.width + 50, text_rect.height + 40))
+        self.display_surf.blit(text_surface, (200, 300))
 
     def main_loop(self):
         running = True
