@@ -26,6 +26,20 @@ class Node:
     def height(self) -> int:
         return self.border_details[3]
 
+    @property
+    def center(self) -> tp.Tuple[int, int]:
+        return self._center
+
+class Link:
+    def __init__(self, from_node: Node, to_node: Node, colour: tp.Tuple[int, int, int], width: int):
+        self._from_coord = from_node.center
+        self._to_coord = to_node.center
+        self._colour = colour
+        self._width = width
+
+    def draw_on(self, surface):
+        pygame.draw.line(surface, self._colour, self._from_coord, self._to_coord, self._width)
+
 class Canvas:
     def __init__(self):
         self.fps = 30
@@ -46,8 +60,12 @@ class Canvas:
         # --- Pygame Font setup
         self.font = pygame.font.SysFont("Arial", 24)
 
-        n = Node("abc", self.font, pos=(200, 300), colour=(0,0,0), background=(0, 255, 0), x_border=40, y_border=10)
-        n.draw_on(self.display_surf)
+        n1 = Node("abc", self.font, pos=(200, 300), colour=(0,0,0), background=(0, 255, 0), x_border=40, y_border=10)
+        n2 = Node("def", self.font, pos=(400, 500), colour=(0,0,0), background=(0, 255, 0), x_border=40, y_border=10)
+        l = Link(n1, n2, colour=(0,0,0), width=5)
+        l.draw_on(self.display_surf)
+        n1.draw_on(self.display_surf)
+        n2.draw_on(self.display_surf)
 
     def main_loop(self):
         running = True
