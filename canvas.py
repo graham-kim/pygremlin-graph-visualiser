@@ -11,7 +11,7 @@ class Canvas:
         self.screen_size = (800, 600)
 
         pygame.init()
-        self.translator = render.ModelToViewTranslator(nodes, links)
+        self.translator = render.ModelToViewTranslator(nodes, links, self.screen_size)
         self.fps_clock = pygame.time.Clock()
 
         # --- Pygame Surface Setup
@@ -23,14 +23,7 @@ class Canvas:
         self.default_background.fill((255, 255, 255))
         self.display_surf.blit(self.default_background, (0, 0))
 
-        self._draw_links_then_nodes()
-
-    def _draw_links_then_nodes(self):
-        for link in self.translator._links:
-            link.draw_on(self.display_surf)
-
-        for node in self.translator._nodes.values():
-            node.draw_on(self.display_surf)
+        self.translator._draw_links_then_nodes(self.display_surf)
 
     def main_loop(self):
         running = True
