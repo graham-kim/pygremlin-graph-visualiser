@@ -4,6 +4,7 @@ import pygame
 from pygame.locals import *
 
 import model
+import angles
 
 def point_within_bounds(display_surface_size: tp.Tuple[int, int], point: tp.Tuple[int, int]) -> bool:
     return point[0] >= 0 \
@@ -110,6 +111,7 @@ class Link:
         self._to_node = to_node
         self._colour = colour
         self._width = width
+        self._arrowhead_length = 16
         self._bounds_check = bounds_check
         self._zoom_out_level = 0
 
@@ -118,14 +120,32 @@ class Link:
         to_coord = self._to_node.center
         if self._bounds_check(from_coord, to_coord):
             pygame.draw.line(surface, self._colour, from_coord, to_coord, self._width)
+            self._draw_arrowhead(surface, from_coord, to_coord)
+
+    def _draw_arrowhead(self, surface, from_coord: tp.Tuple[int, int], to_coord: tp.Tuple[int, int]):
+        rel_vec = (to_coord[0] - from_coord[0], to_coord[1] - from_coord[1])
+        draw_arrow_at = (from_coord[0] + rel_vec[0] * 2 / 3,
+                         from_coord[1] + rel_vec[1] * 2 / 3)
+        left_unit_vec  = angles.get_unit_vector_after_rotating(rel_vec, 150)
+        right_unit_vec = angles.get_unit_vector_after_rotating(rel_vec, 210)
+
+        left_endpoint  = (draw_arrow_at[0] + left_unit_vec[0] * self._arrowhead_length,
+                          draw_arrow_at[1] + left_unit_vec[1] * self._arrowhead_length * -1) # pygame flips y coord
+        right_endpoint = (draw_arrow_at[0] + right_unit_vec[0] * self._arrowhead_length,
+                          draw_arrow_at[1] + right_unit_vec[1] * self._arrowhead_length * -1)
+
+        pygame.draw.line(surface, self._colour, draw_arrow_at, left_endpoint, self._width)
+        pygame.draw.line(surface, self._colour, draw_arrow_at, right_endpoint, self._width)
 
     def zoom_out(self):
         self._zoom_out_level += 1
         self._width //= 2
+        self._arrowhead_length //= 2
 
     def zoom_in(self):
         self._zoom_out_level -= 1
         self._width *= 2
+        self._arrowhead_length *= 2
 
 class ModelToViewTranslator:
     def __init__(self, nodes: tp.List[model.Node], links: tp.List[model.Link], \
