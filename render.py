@@ -101,6 +101,7 @@ class ModelToViewTranslator:
         self.offset_step = (screen_size[0]//4, screen_size[1]//4)
         self.total_offset = (0,0)
 
+        node_in_canvas_bounds = False
         for model_node in nodes:
             render_node = Node(model_node.text,
                                self._big_font,
@@ -111,6 +112,11 @@ class ModelToViewTranslator:
                                y_border=10,
                                bounds_check = self.rect_within_bounds)
             self._nodes[id(model_node)] = render_node
+            if point_within_bounds(screen_size, model_node.pos):
+                node_in_canvas_bounds = True
+
+        if not node_in_canvas_bounds:
+            raise ValueError("At least one node must start within the canvas bounds")
 
         for model_link in links:
             render_link = Link(self._nodes[model_link.from_model_node_id],
