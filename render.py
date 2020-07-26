@@ -29,7 +29,8 @@ def line_within_bounds(display_surface_size: tp.Tuple[int, int], \
         or point_within_bounds(display_surface_size, line_end)
 
 class Node:
-    def __init__(self, text: str, font, pos: tp.Tuple[int, int], colour: tp.Tuple[int, int, int], \
+    def __init__(self, text: str, big_font, small_font, tiny_font, \
+                 pos: tp.Tuple[int, int], colour: tp.Tuple[int, int, int], \
                  background: tp.Tuple[int, int, int], x_border: int, y_border: int, \
                  bounds_check: tp.Callable[[tp.Tuple[int, int, int, int]], bool]):
         self._background = background
@@ -39,17 +40,23 @@ class Node:
         self.x_border = x_border
         self.y_border = y_border
         self._bounds_check = bounds_check
+        self._zoom_out_level = 0
 
-        self._big_text_surface = font.render(text, True, colour, background)
+        self._big_text_surface = big_font.render(text, True, colour, background)
+        self._small_text_surface = small_font.render(text, True, colour, background)
+        self._tiny_text_surface = tiny_font.render(text, True, colour, background)
+        self._current_text_surface = self._big_text_surface
 
     def draw_on(self, surface):
         border = self._border_dimen(self._view_pos)
         if self._bounds_check(border):
             pygame.draw.rect(surface, self._background, border)
-            surface.blit(self._big_text_surface, self._view_pos)
+            surface.blit(self._current_text_surface, self._view_pos)
 
     def consider_new_offset(self, offset: tp.Tuple[int, int]) -> bool:
-        self._new_view_pos = (self._model_pos[0] + offset[0], self._model_pos[1] + offset[1])
+        new_view_pos_at_full_zoom = (self._model_pos[0] + offset[0], self._model_pos[1] + offset[1])
+        self._new_view_pos = (new_view_pos_at_full_zoom[0] // 2 ** self._zoom_out_level,
+                              new_view_pos_at_full_zoom[1] // 2 ** self._zoom_out_level)
         new_border = self._border_dimen(self._new_view_pos)
         return self._bounds_check(new_border)
 
@@ -57,9 +64,31 @@ class Node:
         self._view_pos = self._new_view_pos
 
     def _border_dimen(self, view_pos: tp.Tuple[int, int]) -> tp.Tuple[int, int, int, int]:
-        text_rect = self._big_text_surface.get_rect()
-        return (view_pos[0]-self.x_border, view_pos[1]-self.y_border, \
-                text_rect.width + self.x_border*2, text_rect.height + self.y_border*2)
+        text_rect = self._current_text_surface.get_rect()
+        x_border = self.x_border // 2 ** self._zoom_out_level
+        y_border = self.y_border // 2 ** self._zoom_out_level
+        return (view_pos[0]-x_border, view_pos[1]-y_border, \
+                text_rect.width + x_border * 2, text_rect.height + y_border * 2)
+
+    def zoom_out(self):
+        self._zoom_out_level += 1
+        self._select_text_surface_for_zoom_level()
+        self._view_pos = (self._view_pos[0] // 2, self._view_pos[1] // 2)
+
+    def zoom_in(self):
+        self._zoom_out_level -= 1
+        self._select_text_surface_for_zoom_level()
+        self._view_pos = (self._view_pos[0] * 2, self._view_pos[1] * 2)
+
+    def _select_text_surface_for_zoom_level(self):
+        if self._zoom_out_level == 0:
+            self._current_text_surface = self._big_text_surface
+        elif self._zoom_out_level == 1:
+            self._current_text_surface = self._small_text_surface
+        elif self._zoom_out_level == 2:
+            self._current_text_surface = self._tiny_text_surface
+        else:
+            raise ValueError("Unknown zoom level: {}".format(self._zoom_out_level))
 
     @property
     def width(self) -> int:
@@ -71,7 +100,7 @@ class Node:
 
     @property
     def center(self) -> tp.Tuple[int, int]:
-        text_rect = self._big_text_surface.get_rect()
+        text_rect = self._current_text_surface.get_rect()
         return (self._view_pos[0] + text_rect.width/2, self._view_pos[1] + text_rect.height/2)
 
 class Link:
@@ -82,6 +111,7 @@ class Link:
         self._colour = colour
         self._width = width
         self._bounds_check = bounds_check
+        self._zoom_out_level = 0
 
     def draw_on(self, surface):
         from_coord = self._from_node.center
@@ -89,10 +119,20 @@ class Link:
         if self._bounds_check(from_coord, to_coord):
             pygame.draw.line(surface, self._colour, from_coord, to_coord, self._width)
 
+    def zoom_out(self):
+        self._zoom_out_level += 1
+        self._width //= 2
+
+    def zoom_in(self):
+        self._zoom_out_level -= 1
+        self._width *= 2
+
 class ModelToViewTranslator:
     def __init__(self, nodes: tp.List[model.Node], links: tp.List[model.Link], \
                  screen_size: tp.Tuple[int, int]):
         self._big_font = pygame.font.SysFont("Arial", 24)
+        self._small_font = pygame.font.SysFont("Arial", 12)
+        self._tiny_font = pygame.font.SysFont("Arial", 6)
         self._nodes = {}
         self._links = []
         self.rect_within_bounds = partial(rect_within_bounds, screen_size)
@@ -100,11 +140,15 @@ class ModelToViewTranslator:
 
         self.offset_step = (screen_size[0]//4, screen_size[1]//4)
         self.total_offset = (0,0)
+        self.zoom_out_level = 0
+        self.max_zoom_level = 2
 
         node_in_canvas_bounds = False
         for model_node in nodes:
             render_node = Node(model_node.text,
                                self._big_font,
+                               self._small_font,
+                               self._tiny_font,
                                pos=model_node.pos,
                                colour=(0,0,0),
                                background=self._colour_tuple(model_node.colour),
@@ -122,7 +166,7 @@ class ModelToViewTranslator:
             render_link = Link(self._nodes[model_link.from_model_node_id],
                                self._nodes[model_link.to_model_node_id],
                                colour=(0,0,0),
-                               width=5,
+                               width=4,
                                bounds_check = self.line_within_bounds)
             self._links.append(render_link)
 
@@ -175,3 +219,25 @@ class ModelToViewTranslator:
             if node.consider_new_offset(new_offset):
                 answer = True
         return answer
+
+    def zoom_in(self) -> bool:
+        if self.zoom_out_level <= 0:
+            return False
+
+        self.zoom_out_level -= 1
+        for node in self._nodes.values():
+            node.zoom_in()
+        for link in self._links:
+            link.zoom_in()
+        return True
+
+    def zoom_out(self) -> bool:
+        if self.zoom_out_level >= self.max_zoom_level:
+            return False
+
+        self.zoom_out_level += 1
+        for node in self._nodes.values():
+            node.zoom_out()
+        for link in self._links:
+            link.zoom_out()
+        return True
