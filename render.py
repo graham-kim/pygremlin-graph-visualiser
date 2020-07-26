@@ -30,20 +30,36 @@ def line_within_bounds(display_surface_size: tp.Tuple[int, int], \
 
 class Node:
     def __init__(self, text: str, font, pos: tp.Tuple[int, int], colour: tp.Tuple[int, int, int], \
-                 background: tp.Tuple[int, int, int], x_border: int, y_border: int):
+                 background: tp.Tuple[int, int, int], x_border: int, y_border: int, \
+                 bounds_check: tp.Callable[[tp.Tuple[int, int, int, int]], bool]):
         self._background = background
-        self._pos = pos
-        self._text_surface = font.render(text, True, colour, background)
+        self._model_pos = pos
+        self._view_pos = pos
+        self._new_view_pos = None
+        self.x_border = x_border
+        self.y_border = y_border
+        self._bounds_check = bounds_check
 
-        text_rect = self._text_surface.get_rect()
-        self._border_dimen = (pos[0]-x_border, pos[1]-y_border, \
-                               text_rect.width + x_border*2, text_rect.height + y_border*2)
-        self._center = (pos[0] + text_rect.width/2, pos[1] + text_rect.height/2)
+        self._big_text_surface = font.render(text, True, colour, background)
 
-    def draw_on(self, surface, bounds_check: tp.Callable[[tp.Tuple[int, int, int, int]], bool]):
-        if bounds_check(self._border_dimen):
-            pygame.draw.rect(surface, self._background, self._border_dimen)
-            surface.blit(self._text_surface, self._pos)
+    def draw_on(self, surface):
+        border = self._border_dimen(self._view_pos)
+        if self._bounds_check(border):
+            pygame.draw.rect(surface, self._background, border)
+            surface.blit(self._big_text_surface, self._view_pos)
+
+    def consider_new_offset(self, offset: tp.Tuple[int, int]) -> bool:
+        self._new_view_pos = (self._model_pos[0] + offset[0], self._model_pos[1] + offset[1])
+        new_border = self._border_dimen(self._new_view_pos)
+        return self._bounds_check(new_border)
+
+    def accept_new_offset(self):
+        self._view_pos = self._new_view_pos
+
+    def _border_dimen(self, view_pos: tp.Tuple[int, int]) -> tp.Tuple[int, int, int, int]:
+        text_rect = self._big_text_surface.get_rect()
+        return (view_pos[0]-self.x_border, view_pos[1]-self.y_border, \
+                text_rect.width + self.x_border*2, text_rect.height + self.y_border*2)
 
     @property
     def width(self) -> int:
@@ -55,18 +71,23 @@ class Node:
 
     @property
     def center(self) -> tp.Tuple[int, int]:
-        return self._center
+        text_rect = self._big_text_surface.get_rect()
+        return (self._view_pos[0] + text_rect.width/2, self._view_pos[1] + text_rect.height/2)
 
 class Link:
-    def __init__(self, from_node: Node, to_node: Node, colour: tp.Tuple[int, int, int], width: int):
-        self._from_coord = from_node.center
-        self._to_coord = to_node.center
+    def __init__(self, from_node: Node, to_node: Node, colour: tp.Tuple[int, int, int], width: int, \
+                 bounds_check: tp.Callable[[tp.Tuple[int, int], tp.Tuple[int, int]], bool]):
+        self._from_node = from_node
+        self._to_node = to_node
         self._colour = colour
         self._width = width
+        self._bounds_check = bounds_check
 
-    def draw_on(self, surface, bounds_check: tp.Callable[[tp.Tuple[int, int], tp.Tuple[int, int]], bool]):
-        if bounds_check(self._from_coord, self._to_coord):
-            pygame.draw.line(surface, self._colour, self._from_coord, self._to_coord, self._width)
+    def draw_on(self, surface):
+        from_coord = self._from_node.center
+        to_coord = self._to_node.center
+        if self._bounds_check(from_coord, to_coord):
+            pygame.draw.line(surface, self._colour, from_coord, to_coord, self._width)
 
 class ModelToViewTranslator:
     def __init__(self, nodes: tp.List[model.Node], links: tp.List[model.Link], \
@@ -77,6 +98,9 @@ class ModelToViewTranslator:
         self.rect_within_bounds = partial(rect_within_bounds, screen_size)
         self.line_within_bounds = partial(line_within_bounds, screen_size)
 
+        self.offset_step = (screen_size[0]//4, screen_size[1]//4)
+        self.total_offset = (0,0)
+
         for model_node in nodes:
             render_node = Node(model_node.text,
                                self._big_font,
@@ -84,14 +108,16 @@ class ModelToViewTranslator:
                                colour=(0,0,0),
                                background=self._colour_tuple(model_node.colour),
                                x_border=20,
-                               y_border=10)
+                               y_border=10,
+                               bounds_check = self.rect_within_bounds)
             self._nodes[id(model_node)] = render_node
 
         for model_link in links:
             render_link = Link(self._nodes[model_link.from_model_node_id],
                                self._nodes[model_link.to_model_node_id],
                                colour=(0,0,0),
-                               width=5)
+                               width=5,
+                               bounds_check = self.line_within_bounds)
             self._links.append(render_link)
 
     def _colour_tuple(self, colour_str: str) -> tp.Tuple[int, int, int]:
@@ -106,7 +132,40 @@ class ModelToViewTranslator:
 
     def _draw_links_then_nodes(self, surface):
         for link in self._links:
-            link.draw_on(surface, self.line_within_bounds)
+            link.draw_on(surface)
 
         for node in self._nodes.values():
-            node.draw_on(surface, self.rect_within_bounds)
+            node.draw_on(surface)
+
+    def scroll_down(self) -> bool:
+        return self._accept_scroll_after_check( \
+            (self.total_offset[0], self.total_offset[1] + self.offset_step[1]))
+
+    def scroll_up(self) -> bool:
+        return self._accept_scroll_after_check( \
+            (self.total_offset[0], self.total_offset[1] - self.offset_step[1]))
+
+    def scroll_left(self) -> bool:
+        return self._accept_scroll_after_check( \
+            (self.total_offset[0] - self.offset_step[0], self.total_offset[1]))
+
+    def scroll_right(self) -> bool:
+        return self._accept_scroll_after_check( \
+            (self.total_offset[0] + self.offset_step[0], self.total_offset[1]))
+
+    def _accept_scroll_after_check(self, new_offset: tp.Tuple[int, int]) -> bool:
+        if self._something_to_draw_after_offset(new_offset):
+            self.total_offset = new_offset
+            for node in self._nodes.values():
+                node.accept_new_offset()
+            return True
+        else:
+            print("Scroll rejected: there would be no node to draw")
+            return False
+
+    def _something_to_draw_after_offset(self, new_offset: tp.Tuple[int, int]) -> bool:
+        answer = False
+        for node in self._nodes.values():
+            if node.consider_new_offset(new_offset):
+                answer = True
+        return answer

@@ -21,8 +21,10 @@ class Canvas:
         # Background: a white rectangle the size of the screen
         self.default_background = pygame.Surface(self.display_surf.get_size()).convert()
         self.default_background.fill((255, 255, 255))
-        self.display_surf.blit(self.default_background, (0, 0))
+        self.refresh_display()
 
+    def refresh_display(self):
+        self.display_surf.blit(self.default_background, (0, 0))
         self.translator._draw_links_then_nodes(self.display_surf)
 
     def main_loop(self):
@@ -36,4 +38,21 @@ class Canvas:
                 if (event.type == KEYDOWN and event.key == K_F4 and bool(event.mod & KMOD_ALT)) \
                  or event.type == QUIT:
                     running = False
+
+                if event.type == KEYDOWN:
+                    if event.key == K_DOWN or event.key == K_s:
+                        if self.translator.scroll_down():
+                            self.refresh_display()
+
+                    if event.key == K_UP or event.key == K_w:
+                        if self.translator.scroll_up():
+                            self.refresh_display()
+
+                    if event.key == K_LEFT or event.key == K_a:
+                        if self.translator.scroll_left():
+                            self.refresh_display()
+
+                    if event.key == K_RIGHT or event.key == K_d:
+                        if self.translator.scroll_right():
+                            self.refresh_display()
         pygame.quit()
