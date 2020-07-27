@@ -197,7 +197,7 @@ class ModelToViewTranslator:
         for model_link in links:
             render_link = Link(self._nodes[model_link.from_model_node_id],
                                self._nodes[model_link.to_model_node_id],
-                               colour=(0,0,0),
+                               colour=self._get_colours(model_link.colour)[1],
                                width=4,
                                bounds_check = self.line_within_bounds)
             self._links.append(render_link)

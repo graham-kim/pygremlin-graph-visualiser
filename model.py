@@ -5,12 +5,13 @@ class Node:
     def __init__(self, text: str, pos: tp.Tuple[int, int], colour: str):
         self.text = text
         self.pos = pos
-        self.colour = colour
+        self.colour = colour # see render.ModelToViewTranslator._get_colours()
 
 class Link:
-    def __init__(self, from_id: int, to_id: int):
+    def __init__(self, from_id: int, to_id: int, colour: str):
         self.from_model_node_id = from_id
         self.to_model_node_id = to_id
+        self.colour = colour
 
 class FormationManager:
     def __init__(self):
@@ -31,16 +32,17 @@ class FormationManager:
         self._nodes[new_id] = new_node
         return new_id
 
-    def add_link(self, from_id: int, to_id: int):
-        self._links.append( Link(from_id, to_id) )
+    def add_link(self, from_id: int, to_id: int, colour: str):
+        self._links.append( Link(from_id, to_id, colour) )
 
-    def add_linked_node(self, from_id: int, text: str, pos: tp.Tuple[int, int], colour: str) -> int:
-        new_id = self.add_node(text, pos, colour)
-        self.add_link(from_id, new_id)
+    def add_linked_node(self, from_id: int, text: str, pos: tp.Tuple[int, int], \
+                        node_colour: str, link_colour: str) -> int:
+        new_id = self.add_node(text, pos, node_colour)
+        self.add_link(from_id, new_id, link_colour)
         return new_id
 
     def add_depth_line_of_linked_nodes(self, start_id: int, dir_coord: tp.Tuple[int, int], \
-                                       link_length: int, flip_link_dir: bool, \
+                                       link_length: int, link_colour: str, flip_link_dir: bool, \
                                        text_colour_list: tp.List[tp.Optional[tp.Tuple[str, str]]] \
                                        ) -> tp.List[int]:
 
@@ -56,9 +58,9 @@ class FormationManager:
                 pos = start_pos + unit_dir * link_length * count
                 new_id = self.add_node(spec[0], pos, spec[1])
                 if flip_link_dir:
-                    self.add_link(new_id, from_id)
+                    self.add_link(new_id, from_id, link_colour)
                 else:
-                    self.add_link(from_id, new_id)
+                    self.add_link(from_id, new_id, link_colour)
 
                 added_ids.append(new_id)
                 from_id = new_id
@@ -67,7 +69,8 @@ class FormationManager:
         return added_ids
 
     def add_breadth_line_of_sibling_nodes(self, parent_id: int, start_coord: tp.Tuple[int, int], \
-                                          end_coord: tp.Tuple[int, int], flip_link_dir: bool, \
+                                          end_coord: tp.Tuple[int, int], \
+                                          link_colour: str, flip_link_dir: bool, \
                                           text_colour_list: tp.List[tp.Optional[tp.Tuple[str, str]]] \
                                           ) -> tp.List[int]:
 
@@ -88,9 +91,9 @@ class FormationManager:
                 pos = start_vec2 + rel_vec2 * count / num_specs
                 new_id = self.add_node(spec[0], pos, spec[1])
                 if flip_link_dir:
-                    self.add_link(new_id, parent_id)
+                    self.add_link(new_id, parent_id, link_colour)
                 else:
-                    self.add_link(parent_id, new_id)
+                    self.add_link(parent_id, new_id, link_colour)
 
                 added_ids.append(new_id)
             count += 1
@@ -98,7 +101,8 @@ class FormationManager:
         return added_ids
 
     def add_arc_of_sibling_nodes(self, parent_id: int, radius: int, start_dir_coord: tp.Tuple[int, int], \
-                                 end_dir_coord: tp.Tuple[int, int], clockwise: bool, flip_link_dir: bool, \
+                                 end_dir_coord: tp.Tuple[int, int], clockwise: bool, \
+                                 link_colour: str, flip_link_dir: bool, \
                                  text_colour_list: tp.List[tp.Optional[tp.Tuple[str, str]]] \
                                  ) -> tp.List[int]:
 
@@ -134,9 +138,9 @@ class FormationManager:
 
                 new_id = self.add_node(spec[0], pos, spec[1])
                 if flip_link_dir:
-                    self.add_link(new_id, parent_id)
+                    self.add_link(new_id, parent_id, link_colour)
                 else:
-                    self.add_link(parent_id, new_id)
+                    self.add_link(parent_id, new_id, link_colour)
 
                 added_ids.append(new_id)
             count += 1
