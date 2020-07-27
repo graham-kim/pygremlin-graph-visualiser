@@ -50,10 +50,16 @@ class Node:
         self._current_text_surface = self._big_text_surface
 
     def draw_on(self, surface):
-        border = self._border_dimen(self._view_pos)
+        adjusted_pos = self._adjust_view_pos_to_center()
+        border = self._border_dimen(adjusted_pos)
         if self._bounds_check(border):
             pygame.draw.rect(surface, self._background, border)
-            surface.blit(self._current_text_surface, self._view_pos)
+            surface.blit(self._current_text_surface, adjusted_pos)
+
+    def _adjust_view_pos_to_center(self) -> tp.Tuple[int, int]:
+        text_rect = self._current_text_surface.get_rect()
+        return (self._view_pos[0] - text_rect.width/2, \
+                self._view_pos[1] - text_rect.height/2)
 
     def consider_new_offset(self, offset: tp.Tuple[int, int]) -> bool:
         new_view_pos_at_full_zoom = (self._model_pos[0] + offset[0], self._model_pos[1] + offset[1])
@@ -102,8 +108,7 @@ class Node:
 
     @property
     def center(self) -> tp.Tuple[int, int]:
-        text_rect = self._current_text_surface.get_rect()
-        return (self._view_pos[0] + text_rect.width/2, self._view_pos[1] + text_rect.height/2)
+        return self._view_pos
 
 class Link:
     def __init__(self, from_node: Node, to_node: Node, colour: tp.Tuple[int, int, int], width: int, \
