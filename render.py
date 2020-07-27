@@ -175,13 +175,15 @@ class ModelToViewTranslator:
 
         node_in_canvas_bounds = False
         for model_node in nodes:
+            text_col, box_col = self._get_colours(model_node.colour)
+
             render_node = Node(model_node.text,
                                self._big_font,
                                self._small_font,
                                self._tiny_font,
                                pos=model_node.pos,
-                               colour=(0,0,0),
-                               background=self._colour_tuple(model_node.colour),
+                               colour=text_col,
+                               background=box_col,
                                x_border=20,
                                y_border=10,
                                bounds_check = self.rect_within_bounds)
@@ -200,15 +202,47 @@ class ModelToViewTranslator:
                                bounds_check = self.line_within_bounds)
             self._links.append(render_link)
 
-    def _colour_tuple(self, colour_str: str) -> tp.Tuple[int, int, int]:
+    def _get_colours(self, colour_str: str) -> tp.Tuple[tp.Tuple[int, int, int], \
+                                                        tp.Tuple[int, int, int]]:
         if colour_str == "red":
-            return (255, 0, 0)
+            box_col = (255, 0, 0)
+            text_col = (0, 0, 0)
+        elif colour_str == "orange":
+            box_col = (255, 128, 0)
+            text_col = (0, 0, 0)
+        elif colour_str == "yellow":
+            box_col = (255, 255, 0)
+            text_col = (0, 0, 0)
+        elif colour_str == "lime":
+            box_col = (128, 255, 0)
+            text_col = (0, 0, 0)
         elif colour_str == "green":
-            return (0, 255, 0)
+            box_col = (0, 255, 0)
+            text_col = (0, 0, 0)
+        elif colour_str == "teal":
+            box_col = (0, 255, 255)
+            text_col = (0, 0, 0)
         elif colour_str == "blue":
-            return (0, 0, 255)
+            box_col = (0, 128, 255)
+            text_col = (0, 0, 0)
+        elif colour_str == "navy":
+            box_col = (0, 0, 255)
+            text_col = (255, 255, 255)
+        elif colour_str == "black":
+            box_col = (0, 0, 0)
+            text_col = (255, 255, 255)
+        elif colour_str == "purple":
+            box_col = (128, 0, 255)
+            text_col = (255, 255, 255)
+        elif colour_str == "magenta":
+            box_col = (255, 0, 255)
+            text_col = (0, 0, 0)
+        elif colour_str == "pink":
+            box_col = (255, 128, 255)
+            text_col = (0, 0, 0)
         else:
             raise ValueError("unrecognised colour name: {}".format(colour_str))
+        return text_col, box_col
 
     def _draw_links_then_nodes(self, surface):
         for link in self._links:

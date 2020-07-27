@@ -27,11 +27,11 @@ if __name__ == '__main__':
     mgr.add_arc_of_sibling_nodes( \
         n1, 200, (700, 200), (300, 50), False, True, [
         ("dd", "blue"),
-        ("ee", "blue"),
-        ("ff", "blue"),
-        ("gg", "blue"),
-        ("ii", "blue"),
-        ("jj", "blue")
+        ("ee", "pink"),
+        ("ff", "magenta"),
+        ("gg", "navy"),
+        ("ii", "teal"),
+        ("jj", "purple")
     ])
 
     c = Canvas(mgr.nodes, mgr.links)
