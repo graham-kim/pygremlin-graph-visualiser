@@ -64,3 +64,34 @@ class FormationManager:
             count += 1
 
         return added_ids
+
+    def add_breadth_line_of_sibling_nodes(self, parent_id: int, start_coord: tp.Tuple[int, int], \
+                                          end_coord: tp.Tuple[int, int], flip_link_dir: bool, \
+                                          text_colour_list: tp.List[tp.Optional[tp.Tuple[str, str]]] \
+                                          ) -> tp.List[int]:
+
+        num_specs = len(text_colour_list)
+        if num_specs < 2:
+            raise ValueError("text_colour_list must have at least 2 elements")
+        if text_colour_list[0] is None or text_colour_list[-1] is None:
+            raise ValueError("The first and last item of text_colour_list must not be None")
+
+        added_ids = []
+        parent_pos = self._nodes[parent_id].pos
+        rel_vec = (end_coord[0] - start_coord[0], end_coord[1] - start_coord[1])
+
+        count = 1
+        for spec in text_colour_list:
+            if spec is not None:
+                pos = ( start_coord[0] + rel_vec[0] * count / num_specs,
+                        start_coord[1] + rel_vec[1] * count / num_specs )
+                new_id = self.add_node(spec[0], pos, spec[1])
+                if flip_link_dir:
+                    self.add_link(new_id, parent_id)
+                else:
+                    self.add_link(parent_id, new_id)
+
+                added_ids.append(new_id)
+            count += 1
+
+        return added_ids
