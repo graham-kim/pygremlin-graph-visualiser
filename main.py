@@ -7,7 +7,8 @@ if __name__ == '__main__':
     n2 = mgr.add_node("def", (300,200), "green")
     mgr.add_link(n1, n2)
 
-    children = mgr.add_depth_line_of_linked_nodes(n2, (300,500), 200, [
+    children = mgr.add_depth_line_of_linked_nodes( \
+        n2, (300,500), 200, True, [
         ("ghi", "red"),
         ("jkl", "green"),
         ("mno", "red")

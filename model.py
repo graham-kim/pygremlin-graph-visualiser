@@ -40,7 +40,9 @@ class FormationManager:
         return new_id
 
     def add_depth_line_of_linked_nodes(self, start_id: int, dir_coord: tp.Tuple[int, int], \
-            link_length: int, text_colour_list: tp.List[tp.Optional[tp.Tuple[str, str]]]) -> tp.List[int]:
+                                       link_length: int, flip_link_dir: bool, \
+                                       text_colour_list: tp.List[tp.Optional[tp.Tuple[str, str]]] \
+                                       ) -> tp.List[int]:
 
         added_ids = []
         start_pos = self._nodes[start_id].pos
@@ -52,7 +54,10 @@ class FormationManager:
             if spec is not None:
                 pos = start_pos + unit_dir * link_length * count
                 new_id = self.add_node(spec[0], pos, spec[1])
-                self.add_link(from_id, new_id)
+                if flip_link_dir:
+                    self.add_link(new_id, from_id)
+                else:
+                    self.add_link(from_id, new_id)
 
                 added_ids.append(new_id)
                 from_id = new_id
