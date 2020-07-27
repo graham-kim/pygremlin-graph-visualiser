@@ -209,19 +209,19 @@ class ModelToViewTranslator:
 
     def scroll_down(self) -> bool:
         return self._accept_scroll_after_check( \
-            (self.total_offset[0], self.total_offset[1] + self.offset_step[1]))
+            (self.total_offset[0], self.total_offset[1] - self.offset_step[1]))
 
     def scroll_up(self) -> bool:
         return self._accept_scroll_after_check( \
-            (self.total_offset[0], self.total_offset[1] - self.offset_step[1]))
+            (self.total_offset[0], self.total_offset[1] + self.offset_step[1]))
 
     def scroll_left(self) -> bool:
         return self._accept_scroll_after_check( \
-            (self.total_offset[0] - self.offset_step[0], self.total_offset[1]))
+            (self.total_offset[0] + self.offset_step[0], self.total_offset[1]))
 
     def scroll_right(self) -> bool:
         return self._accept_scroll_after_check( \
-            (self.total_offset[0] + self.offset_step[0], self.total_offset[1]))
+            (self.total_offset[0] - self.offset_step[0], self.total_offset[1]))
 
     def _accept_scroll_after_check(self, new_offset: tp.Tuple[int, int]) -> bool:
         if self._something_to_draw_after_offset(new_offset):
