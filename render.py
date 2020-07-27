@@ -262,6 +262,18 @@ class ModelToViewTranslator:
             link.zoom_out()
         return True
 
+    def _view_to_model_coords(self, view_coord: tp.Tuple[int, int]) -> tp.Tuple[int, int]:
+        x = view_coord[0] * 2 ** self.zoom_out_level - self.total_offset[0]
+        y = view_coord[1] * 2 ** self.zoom_out_level - self.total_offset[1]
+        return (x,y)
+
     def draw_coordinates(self, click_pos: tp.Tuple[int, int], surface):
-        text_surf = self._big_font.render(str(click_pos), True, (0,0,0), (255,255,255))
-        surface.blit(text_surf, click_pos)
+        view_coord_surf = self._big_font.render("view: {}".format(click_pos), \
+                                                True, (0,0,0), (255,255,255))
+        surface.blit(view_coord_surf, click_pos)
+
+        model_pos = self._view_to_model_coords(click_pos)
+        model_coord_surf = self._big_font.render("model: {}".format(model_pos), \
+                                                 True, (0,0,0), (255, 255,255))
+        draw_model_coord_at = (click_pos[0], click_pos[1] + view_coord_surf.get_rect().height)
+        surface.blit(model_coord_surf, draw_model_coord_at)
