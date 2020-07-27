@@ -2,10 +2,11 @@ import typing as tp
 import angles
 
 class Node:
-    def __init__(self, text: str, pos: tp.Tuple[int, int], colour: str):
+    def __init__(self, text: str, pos: tp.Tuple[int, int], colour: str, multibox: bool = False):
         self.text = text
         self.pos = pos
         self.colour = colour # see render.ModelToViewTranslator._get_colours()
+        self.multibox = multibox
 
 class Link:
     def __init__(self, from_id: int, to_id: int, colour: str):
@@ -26,8 +27,8 @@ class FormationManager:
     def links(self) -> tp.List[Link]:
         return self._links
 
-    def add_node(self, text: str, pos: tp.Tuple[int, int], colour: str) -> int:
-        new_node = Node(text, pos, colour)
+    def add_node(self, text: str, pos: tp.Tuple[int, int], colour: str, multibox: bool = False) -> int:
+        new_node = Node(text, pos, colour, multibox)
         new_id = id(new_node)
         self._nodes[new_id] = new_node
         return new_id
@@ -36,8 +37,8 @@ class FormationManager:
         self._links.append( Link(from_id, to_id, colour) )
 
     def add_linked_node(self, from_id: int, text: str, pos: tp.Tuple[int, int], \
-                        node_colour: str, link_colour: str) -> int:
-        new_id = self.add_node(text, pos, node_colour)
+                        node_colour: str, link_colour: str, multibox: bool = False) -> int:
+        new_id = self.add_node(text, pos, node_colour, multibox)
         self.add_link(from_id, new_id, link_colour)
         return new_id
 

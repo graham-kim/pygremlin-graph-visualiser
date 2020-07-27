@@ -33,7 +33,7 @@ class Node:
     def __init__(self, text: str, big_font, small_font, tiny_font, \
                  pos: tp.Tuple[int, int], colour: tp.Tuple[int, int, int], \
                  background: tp.Tuple[int, int, int], x_border: int, y_border: int, \
-                 bounds_check: tp.Callable[[tp.Tuple[int, int, int, int]], bool]):
+                 bounds_check: tp.Callable[[tp.Tuple[int, int, int, int]], bool], multibox: bool):
         self._text = text
         self._background = background
         self._model_pos = pos
@@ -42,6 +42,7 @@ class Node:
         self.x_border = x_border
         self.y_border = y_border
         self._bounds_check = bounds_check
+        self._multibox = multibox
         self._zoom_out_level = 0
 
         self._big_text_surface = big_font.render(text, True, colour, background)
@@ -54,7 +55,18 @@ class Node:
         border = self._border_dimen(adjusted_pos)
         if self._bounds_check(border):
             pygame.draw.rect(surface, self._background, border)
+            if self._multibox:
+                pygame.draw.rect(surface, self._background, self._offset_border_by( \
+                    border, (border[2]/4, border[3]/4) ))
+                pygame.draw.rect(surface, self._background, self._offset_border_by( \
+                    border, (-border[2]/4, -border[3]/4) ))
             surface.blit(self._current_text_surface, adjusted_pos)
+
+    def _offset_border_by(self, border_dimen: tp.Tuple[int, int, int, int], \
+                          border_offset: tp.Tuple[int, int]) -> tp.Tuple[int, int, int, int]:
+        return (border_dimen[0] + border_offset[0],
+                border_dimen[1] + border_offset[1],
+                border_dimen[2], border_dimen[3])
 
     def _adjust_view_pos_to_center(self) -> tp.Tuple[int, int]:
         text_rect = self._current_text_surface.get_rect()
@@ -186,7 +198,8 @@ class ModelToViewTranslator:
                                background=box_col,
                                x_border=20,
                                y_border=10,
-                               bounds_check = self.rect_within_bounds)
+                               bounds_check = self.rect_within_bounds,
+                               multibox=model_node.multibox)
             self._nodes[id(model_node)] = render_node
             if point_within_bounds(screen_size, model_node.pos):
                 node_in_canvas_bounds = True
