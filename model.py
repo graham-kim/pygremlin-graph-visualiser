@@ -1,4 +1,5 @@
 import typing as tp
+import angles
 
 class Node:
     def __init__(self, text: str, pos: tp.Tuple[int, int], colour: str):
@@ -33,3 +34,26 @@ class FormationManager:
     def add_link(self, from_id: int, to_id: int):
         self._links.append( Link(from_id, to_id) )
 
+    def add_linked_node(self, from_id: int, text: str, pos: tp.Tuple[int, int], colour: str) -> int:
+        new_id = self.add_node(text, pos, colour)
+        self.add_link(from_id, new_id)
+        return new_id
+
+    def add_depth_line_of_linked_nodes(self, start_id: int, dir_coord: tp.Tuple[int, int], link_length: int, \
+                                       text_colour_list: tp.List[tp.Tuple[str, str]]) -> tp.List[int]:
+        added_ids = []
+        start_pos = self._nodes[start_id].pos
+        unit_dir = angles.unit( (dir_coord[0] - start_pos[0], dir_coord[1] - start_pos[1]) )
+
+        count = 1
+        from_id = start_id
+        for spec in text_colour_list:
+            pos = start_pos + unit_dir * link_length * count
+            new_id = self.add_node(spec[0], pos, spec[1])
+            self.add_link(from_id, new_id)
+
+            added_ids.append(new_id)
+            from_id = new_id
+            count += 1
+
+        return added_ids
