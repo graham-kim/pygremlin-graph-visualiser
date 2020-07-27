@@ -45,8 +45,9 @@ class FormationManager:
                                        ) -> tp.List[int]:
 
         added_ids = []
-        start_pos = self._nodes[start_id].pos
-        unit_dir = angles.unit( (dir_coord[0] - start_pos[0], dir_coord[1] - start_pos[1]) )
+        start_pos = angles.vec2(self._nodes[start_id].pos)
+        dir_vec2 = angles.vec2(dir_coord)
+        unit_dir = angles.unit( dir_vec2 - start_pos )
 
         count = 1
         from_id = start_id
@@ -77,14 +78,14 @@ class FormationManager:
             raise ValueError("The first and last item of text_colour_list must not be None")
 
         added_ids = []
-        parent_pos = self._nodes[parent_id].pos
-        rel_vec = (end_coord[0] - start_coord[0], end_coord[1] - start_coord[1])
+        start_vec2 = angles.vec2(start_coord)
+        end_vec2 = angles.vec2(end_coord)
+        rel_vec2 = end_vec2 - start_vec2
 
         count = 1
         for spec in text_colour_list:
             if spec is not None:
-                pos = ( start_coord[0] + rel_vec[0] * count / num_specs,
-                        start_coord[1] + rel_vec[1] * count / num_specs )
+                pos = start_vec2 + rel_vec2 * count / num_specs
                 new_id = self.add_node(spec[0], pos, spec[1])
                 if flip_link_dir:
                     self.add_link(new_id, parent_id)

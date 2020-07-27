@@ -129,18 +129,20 @@ class Link:
             self._draw_arrowhead(surface, from_coord, to_coord)
 
     def _draw_arrowhead(self, surface, from_coord: tp.Tuple[int, int], to_coord: tp.Tuple[int, int]):
-        rel_vec = (to_coord[0] - from_coord[0], to_coord[1] - from_coord[1])
-        draw_arrow_at = (from_coord[0] + rel_vec[0] * 2 / 3,
-                         from_coord[1] + rel_vec[1] * 2 / 3)
-        left_unit_vec  = angles.flip_y( \
-                            angles.get_unit_vector_after_rotating(angles.flip_y(rel_vec), 150) )
-        right_unit_vec = angles.flip_y( \
-                            angles.get_unit_vector_after_rotating(angles.flip_y(rel_vec), 210) )
+        from_vec2 = angles.vec2(from_coord)
+        to_vec2 = angles.vec2(to_coord)
+        rel_vec = to_vec2 - from_vec2
+        draw_arrow_at = from_vec2 + (rel_vec * 2 / 3)
 
-        left_endpoint  = (draw_arrow_at[0] + left_unit_vec[0] * self._arrowhead_length,
-                          draw_arrow_at[1] + left_unit_vec[1] * self._arrowhead_length)
-        right_endpoint = (draw_arrow_at[0] + right_unit_vec[0] * self._arrowhead_length,
-                          draw_arrow_at[1] + right_unit_vec[1] * self._arrowhead_length)
+        left_unit_vec  = angles.flip_y( \
+                            angles.get_unit_vector_after_rotating( \
+                                angles.flip_y(rel_vec), 150) )
+        right_unit_vec = angles.flip_y( \
+                            angles.get_unit_vector_after_rotating( \
+                                angles.flip_y(rel_vec), 210) )
+
+        left_endpoint  = draw_arrow_at + left_unit_vec * self._arrowhead_length
+        right_endpoint = draw_arrow_at + right_unit_vec * self._arrowhead_length
 
         pygame.draw.line(surface, self._colour, draw_arrow_at, left_endpoint, self._width)
         pygame.draw.line(surface, self._colour, draw_arrow_at, right_endpoint, self._width)
