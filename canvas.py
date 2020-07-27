@@ -39,6 +39,10 @@ class Canvas:
                  or event.type == QUIT:
                     running = False
 
+                if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                    self.refresh_display()
+                    self.translator.draw_coordinates(event.pos, self.display_surf)
+
                 if event.type == KEYDOWN:
                     if event.key == K_DOWN or event.key == K_s:
                         if self.translator.scroll_down():

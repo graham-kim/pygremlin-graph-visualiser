@@ -261,3 +261,7 @@ class ModelToViewTranslator:
         for link in self._links:
             link.zoom_out()
         return True
+
+    def draw_coordinates(self, click_pos: tp.Tuple[int, int], surface):
+        text_surf = self._big_font.render(str(click_pos), True, (0,0,0), (255,255,255))
+        surface.blit(text_surf, click_pos)
