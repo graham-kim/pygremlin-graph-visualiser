@@ -7,11 +7,13 @@ if __name__ == '__main__':
     n2 = mgr.add_node("def", (300,200), "green")
     mgr.add_link(n1, n2)
 
-    mgr.add_depth_line_of_linked_nodes(n2, (700,100), 200, [
+    children = mgr.add_depth_line_of_linked_nodes(n2, (300,500), 200, [
         ("ghi", "red"),
         ("jkl", "green"),
         ("mno", "red")
     ])
+
+    mgr.add_linked_node(children[0], "xyz", (600,500), "green")
 
     c = Canvas(mgr.nodes, mgr.links)
     c.main_loop()
