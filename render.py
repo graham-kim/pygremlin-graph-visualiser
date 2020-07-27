@@ -136,10 +136,10 @@ class Link:
 
         left_unit_vec  = angles.flip_y( \
                             angles.get_unit_vector_after_rotating( \
-                                angles.flip_y(rel_vec), 150) )
+                                angles.flip_y(rel_vec), angles.deg_to_rad(150)) )
         right_unit_vec = angles.flip_y( \
                             angles.get_unit_vector_after_rotating( \
-                                angles.flip_y(rel_vec), 210) )
+                                angles.flip_y(rel_vec), angles.deg_to_rad(210)) )
 
         left_endpoint  = draw_arrow_at + left_unit_vec * self._arrowhead_length
         right_endpoint = draw_arrow_at + right_unit_vec * self._arrowhead_length

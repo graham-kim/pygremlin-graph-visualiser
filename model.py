@@ -96,3 +96,49 @@ class FormationManager:
             count += 1
 
         return added_ids
+
+    def add_arc_of_sibling_nodes(self, parent_id: int, radius: int, start_dir_coord: tp.Tuple[int, int], \
+                                 end_dir_coord: tp.Tuple[int, int], clockwise: bool, flip_link_dir: bool, \
+                                 text_colour_list: tp.List[tp.Optional[tp.Tuple[str, str]]] \
+                                 ) -> tp.List[int]:
+
+        num_specs = len(text_colour_list)
+        if num_specs < 2:
+            raise ValueError("text_colour_list must have at least 2 elements")
+        if text_colour_list[0] is None or text_colour_list[-1] is None:
+            raise ValueError("The first and last item of text_colour_list must not be None")
+
+        added_ids = []
+        parent_pos = self._nodes[parent_id].pos
+        parent_vec2 = angles.vec2(parent_pos)
+
+        start_vec2 = angles.vec2(start_dir_coord) - parent_vec2
+        end_vec2 = angles.vec2(end_dir_coord) - parent_vec2
+
+        start_bear_rad = angles.get_bearing_rad_of( angles.flip_y(start_vec2) )
+        end_bear_rad = angles.get_bearing_rad_of( angles.flip_y(end_vec2) )
+        bear_diff_rad = angles.normalise_angle(end_bear_rad - start_bear_rad)
+        if clockwise:
+            bear_diff_rad = angles.flip_angle(bear_diff_rad)
+
+        count = 0
+        for spec in text_colour_list:
+            if spec is not None:
+                rotate_anticlockwise_by = bear_diff_rad * count / (num_specs - 1)
+                if clockwise:
+                    rotate_anticlockwise_by *= -1
+                dir_vec = angles.flip_y( \
+                            angles.get_unit_vector_after_rotating( \
+                                angles.flip_y(start_vec2), rotate_anticlockwise_by ))
+                pos = parent_pos + dir_vec * radius
+
+                new_id = self.add_node(spec[0], pos, spec[1])
+                if flip_link_dir:
+                    self.add_link(new_id, parent_id)
+                else:
+                    self.add_link(parent_id, new_id)
+
+                added_ids.append(new_id)
+            count += 1
+
+        return added_ids
