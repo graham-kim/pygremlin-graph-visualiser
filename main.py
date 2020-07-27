@@ -9,29 +9,29 @@ if __name__ == '__main__':
 
     children = mgr.add_depth_line_of_linked_nodes( \
         n2, (300,500), 200, "pink", False, [
-        ("ghi", "red"),
-        ("jkl", "green"),
-        ("mno", "red")
+        ("ghi", "red", False),
+        ("jkl", "green", False),
+        ("mno", "teal", True)
     ])
 
-    n3 = mgr.add_linked_node(children[0], "xyz", (600,500), "green", "purple")
+    n3 = mgr.add_linked_node(children[0], "xyz", (600,500), "green", "purple", False)
 
     mgr.add_breadth_line_of_sibling_nodes( \
         n3, (800,700), (800,300), "teal", False, [
-        ("aaa", "red"),
-        ("bbb", "red"),
+        ("aaa", "red", False),
+        ("bbb", "red", False),
         None,
-        ("ccc", "green")
+        ("ccc", "purple", True)
     ])
 
     mgr.add_arc_of_sibling_nodes( \
         n1, 200, (700, 200), (300, 50), False, "lime", True, [
-        ("dd", "blue"),
-        ("ee", "pink"),
-        ("ff", "magenta"),
-        ("gg", "navy"),
-        ("ii", "teal"),
-        ("jj", "purple")
+        ("dd", "blue", False),
+        ("ee", "pink", False),
+        ("ff", "magenta", False),
+        ("gg", "navy", False),
+        ("ii", "teal", False),
+        ("jj", "purple", False)
     ])
 
     c = Canvas(mgr.nodes, mgr.links)

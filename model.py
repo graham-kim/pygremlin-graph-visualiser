@@ -44,7 +44,7 @@ class FormationManager:
 
     def add_depth_line_of_linked_nodes(self, start_id: int, dir_coord: tp.Tuple[int, int], \
                                        link_length: int, link_colour: str, flip_link_dir: bool, \
-                                       text_colour_list: tp.List[tp.Optional[tp.Tuple[str, str]]] \
+                                       node_specs: tp.List[tp.Optional[tp.Tuple[str, str, bool]]] \
                                        ) -> tp.List[int]:
 
         added_ids = []
@@ -54,10 +54,10 @@ class FormationManager:
 
         count = 1
         from_id = start_id
-        for spec in text_colour_list:
+        for spec in node_specs:
             if spec is not None:
                 pos = start_pos + unit_dir * link_length * count
-                new_id = self.add_node(spec[0], pos, spec[1])
+                new_id = self.add_node(spec[0], pos, spec[1], spec[2])
                 if flip_link_dir:
                     self.add_link(new_id, from_id, link_colour)
                 else:
@@ -72,14 +72,14 @@ class FormationManager:
     def add_breadth_line_of_sibling_nodes(self, parent_id: int, start_coord: tp.Tuple[int, int], \
                                           end_coord: tp.Tuple[int, int], \
                                           link_colour: str, flip_link_dir: bool, \
-                                          text_colour_list: tp.List[tp.Optional[tp.Tuple[str, str]]] \
+                                          node_specs: tp.List[tp.Optional[tp.Tuple[str, str, bool]]] \
                                           ) -> tp.List[int]:
 
-        num_specs = len(text_colour_list)
+        num_specs = len(node_specs)
         if num_specs < 2:
-            raise ValueError("text_colour_list must have at least 2 elements")
-        if text_colour_list[0] is None or text_colour_list[-1] is None:
-            raise ValueError("The first and last item of text_colour_list must not be None")
+            raise ValueError("node_specs must have at least 2 elements")
+        if node_specs[0] is None or node_specs[-1] is None:
+            raise ValueError("The first and last item of node_specs must not be None")
 
         added_ids = []
         start_vec2 = angles.vec2(start_coord)
@@ -87,10 +87,10 @@ class FormationManager:
         rel_vec2 = end_vec2 - start_vec2
 
         count = 1
-        for spec in text_colour_list:
+        for spec in node_specs:
             if spec is not None:
                 pos = start_vec2 + rel_vec2 * count / num_specs
-                new_id = self.add_node(spec[0], pos, spec[1])
+                new_id = self.add_node(spec[0], pos, spec[1], spec[2])
                 if flip_link_dir:
                     self.add_link(new_id, parent_id, link_colour)
                 else:
@@ -104,14 +104,14 @@ class FormationManager:
     def add_arc_of_sibling_nodes(self, parent_id: int, radius: int, start_dir_coord: tp.Tuple[int, int], \
                                  end_dir_coord: tp.Tuple[int, int], clockwise: bool, \
                                  link_colour: str, flip_link_dir: bool, \
-                                 text_colour_list: tp.List[tp.Optional[tp.Tuple[str, str]]] \
+                                 node_specs: tp.List[tp.Optional[tp.Tuple[str, str, bool]]] \
                                  ) -> tp.List[int]:
 
-        num_specs = len(text_colour_list)
+        num_specs = len(node_specs)
         if num_specs < 2:
-            raise ValueError("text_colour_list must have at least 2 elements")
-        if text_colour_list[0] is None or text_colour_list[-1] is None:
-            raise ValueError("The first and last item of text_colour_list must not be None")
+            raise ValueError("node_specs must have at least 2 elements")
+        if node_specs[0] is None or node_specs[-1] is None:
+            raise ValueError("The first and last item of node_specs must not be None")
 
         added_ids = []
         parent_pos = self._nodes[parent_id].pos
@@ -127,7 +127,7 @@ class FormationManager:
             bear_diff_rad = angles.flip_angle(bear_diff_rad)
 
         count = 0
-        for spec in text_colour_list:
+        for spec in node_specs:
             if spec is not None:
                 rotate_anticlockwise_by = bear_diff_rad * count / (num_specs - 1)
                 if clockwise:
@@ -137,7 +137,7 @@ class FormationManager:
                                 angles.flip_y(start_vec2), rotate_anticlockwise_by ))
                 pos = parent_pos + dir_vec * radius
 
-                new_id = self.add_node(spec[0], pos, spec[1])
+                new_id = self.add_node(spec[0], pos, spec[1], spec[2])
                 if flip_link_dir:
                     self.add_link(new_id, parent_id, link_colour)
                 else:
