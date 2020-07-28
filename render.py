@@ -49,6 +49,7 @@ class Node:
         self._small_text_surface = small_font.render(text, True, colour, background)
         self._tiny_text_surface = tiny_font.render(text, True, colour, background)
         self._current_text_surface = self._big_text_surface
+        self._multibox_factor = 4
 
     def draw_on(self, surface):
         adjusted_pos = self._adjust_view_pos_to_center()
@@ -57,9 +58,9 @@ class Node:
             pygame.draw.rect(surface, self._background, border)
             if self._multibox:
                 pygame.draw.rect(surface, self._background, self._offset_border_by( \
-                    border, (border[2]/4, border[3]/4) ))
+                    border, ( border[2]/self._multibox_factor,  border[3]/self._multibox_factor) ))
                 pygame.draw.rect(surface, self._background, self._offset_border_by( \
-                    border, (-border[2]/4, -border[3]/4) ))
+                    border, (-border[2]/self._multibox_factor, -border[3]/self._multibox_factor) ))
             surface.blit(self._current_text_surface, adjusted_pos)
 
     def _offset_border_by(self, border_dimen: tp.Tuple[int, int, int, int], \
