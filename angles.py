@@ -58,11 +58,15 @@ def rotate_vector_right_angle(a: np.array) -> np.array:
     b[1] = a[0]
     return b
 
-def line_intersection(a1: np.array, a2: np.array, b1: np.array, b2: np.array) -> np.array:
+def line_intersection(a1: np.array, a2: np.array, b1: np.array, b2: np.array \
+                     ) -> tp.Tuple[float, np.array]:
     """
     Let line A be defined by endpoints a1, a2
     Let line B be defined by endpoints b1, b2
-    Does not catch special cases like parallel lines or points
+    Returns both the fraction of B's relative vector to the intersection and the actual
+    coordinates to it.
+
+    Does not catch special cases like parallel lines or points.
     """
 
     delta_a = a2-a1
@@ -76,4 +80,7 @@ def line_intersection(a1: np.array, a2: np.array, b1: np.array, b2: np.array) ->
 
     denom = np.dot( delta_a_perp, delta_b )
     num = np.dot( delta_a_perp, delta_s )
-    return b1 + delta_b * (num/denom.astype(float))
+    rel_vec_fraction = (num/denom.astype(float))
+
+    intersection_point = b1 + delta_b * rel_vec_fraction
+    return (rel_vec_fraction, intersection_point)

@@ -2,6 +2,8 @@ import typing as tp
 from functools import partial
 import pygame
 from pygame.locals import *
+import numpy as np
+import math
 
 import model
 import angles
@@ -52,7 +54,7 @@ class Node:
         self._multibox_factor = 4
 
     def draw_on(self, surface):
-        adjusted_pos = self._adjust_view_pos_to_center()
+        adjusted_pos = self._adjust_view_pos_for_centering_box()
         border = self._border_dimen(adjusted_pos)
         if self._bounds_check(border):
             pygame.draw.rect(surface, self._background, border)
@@ -69,7 +71,7 @@ class Node:
                 border_dimen[1] + border_offset[1],
                 border_dimen[2], border_dimen[3])
 
-    def _adjust_view_pos_to_center(self) -> tp.Tuple[int, int]:
+    def _adjust_view_pos_for_centering_box(self) -> tp.Tuple[int, int]:
         text_rect = self._current_text_surface.get_rect()
         return (self._view_pos[0] - text_rect.width/2, \
                 self._view_pos[1] - text_rect.height/2)
@@ -111,6 +113,44 @@ class Node:
         else:
             raise ValueError("Unknown zoom level: {}".format(self._zoom_out_level))
 
+    def get_intersection_point_to_link(self, link_from: np.array, link_to: np.array \
+                                      ) -> tp.Tuple[float, np.array]:
+        """
+        Get the fraction of the relative link vector to the intersection and the actual coordinates for it
+        between the link and the node's rectangle.
+        """
+        box_bounds = self.box_bounds
+
+        top_left_vec2 = np.array((box_bounds[0], box_bounds[1]))
+        top_right_vec2 = np.array((box_bounds[0]+box_bounds[2], box_bounds[1]))
+        bottom_right_vec2 = np.array((box_bounds[0]+box_bounds[2], box_bounds[1]+box_bounds[3]))
+        bottom_left_vec2 = np.array((box_bounds[0], box_bounds[1]+box_bounds[3]))
+
+        top_left_bear, top_right_bear, bottom_right_bear, bottom_left_bear = \
+            self._get_bearings_of_corners( top_left_vec2 )
+
+        link_rel_vec2 = link_to - link_from
+        link_bear = angles.get_bearing_rad_of( \
+                        angles.flip_y(link_rel_vec2) )
+
+        if link_bear >= top_right_bear and link_bear < top_left_bear:
+            return angles.line_intersection(top_left_vec2, top_right_vec2, link_from, link_to)
+        elif link_bear >= top_left_bear and link_bear < bottom_left_bear:
+            return angles.line_intersection(bottom_left_vec2, top_left_vec2, link_from, link_to)
+        elif link_bear >= bottom_left_bear and link_bear < bottom_right_bear:
+            return angles.line_intersection(bottom_right_vec2, bottom_left_vec2, link_from, link_to)
+        else:
+            return angles.line_intersection(top_right_vec2, bottom_right_vec2, link_from, link_to)
+
+    def _get_bearings_of_corners(self, rect_top_left: np.array) -> tp.Tuple[float, float, float, float]:
+        top_left = angles.get_bearing_rad_of( \
+                        angles.flip_y(rect_top_left - self.center) )
+        top_right = math.pi - top_left
+        bottom_right = math.pi + top_left
+        bottom_left = math.pi + top_right
+
+        return top_left, top_right, bottom_right, bottom_left
+
     @property
     def width(self) -> int:
         return self.border_details[2]
@@ -125,7 +165,8 @@ class Node:
 
     @property
     def box_bounds(self) -> tp.Tuple[int, int, int, int]:
-        return self._border_dimen(self._adjust_view_pos_to_center())
+        # TODO check multibox
+        return self._border_dimen(self._adjust_view_pos_for_centering_box())
 
 class Link:
     def __init__(self, from_node: Node, to_node: Node, colour: tp.Tuple[int, int, int], width: int, \
@@ -142,19 +183,39 @@ class Link:
         from_coord = self._from_node.center
         to_coord = self._to_node.center
         if self._bounds_check(from_coord, to_coord):
-            pygame.draw.line(surface, self._colour, from_coord, to_coord, self._width)
-            self._draw_arrowhead(surface, from_coord, to_coord)
+            if self._draw_arrowhead(surface, from_coord, to_coord):
+                pygame.draw.line(surface, self._colour, from_coord, to_coord, self._width)
 
-    def _draw_arrowhead(self, surface, from_coord: tp.Tuple[int, int], to_coord: tp.Tuple[int, int]):
+    def _draw_arrowhead(self, surface, from_coord: tp.Tuple[int, int], to_coord: tp.Tuple[int, int] \
+                        ) -> bool:
+        """
+        Calculates where to draw the arrowhead based on where the link would be visible between
+        the two nodes, i.e. from the two intersection points.
+
+        Returns False if, during the above calculation, it discovers the nodes are overlapping.
+        That means the link would be entirely obscured.
+        """
         from_vec2 = angles.vec2(from_coord)
         to_vec2 = angles.vec2(to_coord)
-        rel_vec2 = to_vec2 - from_vec2
-        draw_arrow_at = from_vec2 + (rel_vec2 * 2 / 3)
+
+        rel_vec_frac_from, intersection_from = \
+            self._from_node.get_intersection_point_to_link(from_vec2, to_vec2)
+        rel_vec_frac_to, intersection_to = \
+            self._to_node.get_intersection_point_to_link(to_vec2, from_vec2)
+        rel_vec_frac_to = 1 - rel_vec_frac_to
+
+        if rel_vec_frac_to < rel_vec_frac_from:
+            # The nodes have overlapped, the link would be completely obscured
+            return False
+
+        rel_vec2 = intersection_to - intersection_from
+        draw_arrow_at = intersection_from + (rel_vec2 * 2 / 3)
 
         left_endpoint, right_endpoint = self._get_arrow_endpoints(rel_vec2, draw_arrow_at)
 
         pygame.draw.line(surface, self._colour, draw_arrow_at, left_endpoint, self._width)
         pygame.draw.line(surface, self._colour, draw_arrow_at, right_endpoint, self._width)
+        return True
 
     def _get_arrow_endpoints(self, rel_vec2: np.array, draw_arrow_at: np.array \
                              ) -> tp.Tuple[np.array, np.array]:
@@ -168,6 +229,8 @@ class Link:
 
         left_endpoint  = draw_arrow_at + left_unit_vec * self._arrowhead_length
         right_endpoint = draw_arrow_at + right_unit_vec * self._arrowhead_length
+
+        return left_endpoint, right_endpoint
 
     def zoom_out(self):
         self._zoom_out_level += 1
