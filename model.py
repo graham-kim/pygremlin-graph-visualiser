@@ -3,6 +3,7 @@ import os
 
 sys.path.append( os.path.dirname(__file__) )
 
+import numpy as np
 import typing as tp
 import angles
 
@@ -31,6 +32,9 @@ class FormationManager:
     @property
     def links(self) -> tp.List[Link]:
         return self._links
+
+    def pos_of(self, node_id: int) -> np.array:
+        return np.array(self._nodes[node_id].pos)
 
     def add_node(self, text: str, pos: tp.Tuple[int, int], colour: str, multibox: bool = False) -> int:
         new_node = Node(text, pos, colour, multibox)
@@ -91,10 +95,10 @@ class FormationManager:
         end_vec2 = angles.vec2(end_coord)
         rel_vec2 = end_vec2 - start_vec2
 
-        count = 1
+        count = 0
         for spec in node_specs:
             if spec is not None:
-                pos = start_vec2 + rel_vec2 * count / num_specs
+                pos = start_vec2 + rel_vec2 * count / (num_specs - 1)
                 new_id = self.add_node(spec[0], pos, spec[1], spec[2])
                 if flip_link_dir:
                     self.add_link(new_id, parent_id, link_colour)
