@@ -51,3 +51,29 @@ def get_unit_vector_after_rotating(start_vec: tp.Union[np.array, tp.Tuple[float,
     new_angle_rad = get_bearing_rad_of( start_vec ) + anti_clockwise_rad
     ans_vec = (math.cos(new_angle_rad), math.sin(new_angle_rad))
     return unit(ans_vec)
+
+def rotate_vector_right_angle(a: np.array) -> np.array:
+    b = np.empty_like(a)
+    b[0] = -a[1]
+    b[1] = a[0]
+    return b
+
+def line_intersection(a1: np.array, a2: np.array, b1: np.array, b2: np.array) -> np.array:
+    """
+    Let line A be defined by endpoints a1, a2
+    Let line B be defined by endpoints b1, b2
+    Does not catch special cases like parallel lines or points
+    """
+
+    delta_a = a2-a1
+    delta_b = b2-b1
+
+    # Equation origin:
+    # (a1 -> b1 -> intersection_point) dot A_perpendicular = 0
+    # find intersection_point as "b1 + fraction of delta_b"
+    delta_s = a1-b1
+    delta_a_perp = rotate_vector_right_angle(delta_a)
+
+    denom = np.dot( delta_a_perp, delta_b )
+    num = np.dot( delta_a_perp, delta_s )
+    return b1 + delta_b * (num/denom.astype(float))
