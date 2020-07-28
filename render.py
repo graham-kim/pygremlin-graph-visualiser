@@ -165,8 +165,13 @@ class Node:
 
     @property
     def box_bounds(self) -> tp.Tuple[int, int, int, int]:
-        # TODO check multibox
-        return self._border_dimen(self._adjust_view_pos_for_centering_box())
+        border_dimen = self._border_dimen(self._adjust_view_pos_for_centering_box())
+        if self._multibox:
+            border_dimen = (border_dimen[0] - border_dimen[2]/self._multibox_factor,
+                            border_dimen[1] - border_dimen[3]/self._multibox_factor,
+                            border_dimen[2] * (1 + 2/self._multibox_factor),
+                            border_dimen[3] * (1 + 2/self._multibox_factor))
+        return border_dimen
 
 class Link:
     def __init__(self, from_node: Node, to_node: Node, colour: tp.Tuple[int, int, int], width: int, \
