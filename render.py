@@ -123,6 +123,10 @@ class Node:
     def center(self) -> tp.Tuple[int, int]:
         return self._view_pos
 
+    @property
+    def box_bounds(self) -> tp.Tuple[int, int, int, int]:
+        return self._border_dimen(self._adjust_view_pos_to_center())
+
 class Link:
     def __init__(self, from_node: Node, to_node: Node, colour: tp.Tuple[int, int, int], width: int, \
                  bounds_check: tp.Callable[[tp.Tuple[int, int], tp.Tuple[int, int]], bool]):
@@ -144,21 +148,26 @@ class Link:
     def _draw_arrowhead(self, surface, from_coord: tp.Tuple[int, int], to_coord: tp.Tuple[int, int]):
         from_vec2 = angles.vec2(from_coord)
         to_vec2 = angles.vec2(to_coord)
-        rel_vec = to_vec2 - from_vec2
-        draw_arrow_at = from_vec2 + (rel_vec * 2 / 3)
+        rel_vec2 = to_vec2 - from_vec2
+        draw_arrow_at = from_vec2 + (rel_vec2 * 2 / 3)
 
-        left_unit_vec  = angles.flip_y( \
-                            angles.get_unit_vector_after_rotating( \
-                                angles.flip_y(rel_vec), angles.deg_to_rad(150)) )
-        right_unit_vec = angles.flip_y( \
-                            angles.get_unit_vector_after_rotating( \
-                                angles.flip_y(rel_vec), angles.deg_to_rad(210)) )
-
-        left_endpoint  = draw_arrow_at + left_unit_vec * self._arrowhead_length
-        right_endpoint = draw_arrow_at + right_unit_vec * self._arrowhead_length
+        left_endpoint, right_endpoint = self._get_arrow_endpoints(rel_vec2, draw_arrow_at)
 
         pygame.draw.line(surface, self._colour, draw_arrow_at, left_endpoint, self._width)
         pygame.draw.line(surface, self._colour, draw_arrow_at, right_endpoint, self._width)
+
+    def _get_arrow_endpoints(self, rel_vec2: np.array, draw_arrow_at: np.array \
+                             ) -> tp.Tuple[np.array, np.array]:
+
+        left_unit_vec  = angles.flip_y( \
+                            angles.get_unit_vector_after_rotating( \
+                                angles.flip_y(rel_vec2), angles.deg_to_rad(150)) )
+        right_unit_vec = angles.flip_y( \
+                            angles.get_unit_vector_after_rotating( \
+                                angles.flip_y(rel_vec2), angles.deg_to_rad(210)) )
+
+        left_endpoint  = draw_arrow_at + left_unit_vec * self._arrowhead_length
+        right_endpoint = draw_arrow_at + right_unit_vec * self._arrowhead_length
 
     def zoom_out(self):
         self._zoom_out_level += 1
