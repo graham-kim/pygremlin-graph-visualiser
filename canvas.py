@@ -50,6 +50,11 @@ class Canvas:
                         pygame.image.save(self.display_surf, "screenshot-{}.png".format(now_str))
                         continue
 
+                    if event.key == K_d and bool(event.mod & KMOD_CTRL):
+                        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        self.translator.add_timestamp(self.display_surf, now_str)
+                        continue
+
                     if event.key == K_DOWN or event.key == K_s:
                         if self.translator.scroll_down():
                             self.refresh_display()

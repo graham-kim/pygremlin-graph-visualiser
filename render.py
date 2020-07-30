@@ -412,3 +412,10 @@ class ModelToViewTranslator:
                                                  True, (0,0,0), (255, 255,255))
         draw_model_coord_at = (click_pos[0], click_pos[1] + view_coord_surf.get_rect().height)
         surface.blit(model_coord_surf, draw_model_coord_at)
+
+    def add_timestamp(self, surface, now_str: str):
+        now_surf = self._big_font.render(now_str, True, (0,0,0), (255,255,255))
+        x = surface.get_width() - now_surf.get_rect().width
+        y = surface.get_height() - now_surf.get_rect().height
+
+        surface.blit(now_surf, (x, y))
