@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import typing as tp
+from datetime import datetime
 
 import render
 import model
@@ -45,7 +46,8 @@ class Canvas:
 
                 if event.type == KEYDOWN:
                     if event.key == K_s and bool(event.mod & KMOD_CTRL):
-                        pygame.image.save(self.display_surf, "screenshot.png")
+                        now_str = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+                        pygame.image.save(self.display_surf, "screenshot-{}.png".format(now_str))
                         continue
 
                     if event.key == K_DOWN or event.key == K_s:
