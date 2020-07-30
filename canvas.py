@@ -44,6 +44,10 @@ class Canvas:
                     self.translator.draw_coordinates(event.pos, self.display_surf)
 
                 if event.type == KEYDOWN:
+                    if event.key == K_s and bool(event.mod & KMOD_CTRL):
+                        pygame.image.save(self.display_surf, "screenshot.png")
+                        continue
+
                     if event.key == K_DOWN or event.key == K_s:
                         if self.translator.scroll_down():
                             self.refresh_display()
