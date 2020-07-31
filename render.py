@@ -204,7 +204,7 @@ class Link:
         That means the link would be entirely obscured.
         """
         if self._arrow_draw == model.ArrowDraw.NO_ARROW:
-            return
+            return True
 
         from_vec2 = angles.vec2(from_coord)
         to_vec2 = angles.vec2(to_coord)

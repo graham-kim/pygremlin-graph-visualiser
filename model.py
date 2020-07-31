@@ -7,7 +7,7 @@ import numpy as np
 import typing as tp
 import angles
 
-from spec import ArrowDraw
+from spec import ArrowDraw, NodeSpec
 
 class Node:
     def __init__(self, text: str, pos: tp.Tuple[int, int], colour: str, multibox: bool = False):
@@ -49,13 +49,13 @@ class FormationManager:
         self._links.append( Link(from_id, to_id, colour, arrow_draw) )
 
     def add_linked_node(self, from_id: int, text: str, pos: tp.Tuple[int, int], \
-                        node_colour: str, link_colour: str, arrow_draw: ArrowDraw, multibox: bool = False) -> int:
-        new_id = self.add_node(text, pos, node_colour, multibox)
-        self.add_link(from_id, new_id, link_colour, arrow_draw)
+                        node_col: str, link_col: str, arrow_draw: ArrowDraw, multibox: bool = False) -> int:
+        new_id = self.add_node(text, pos, node_col, multibox)
+        self.add_link(from_id, new_id, link_col, arrow_draw)
         return new_id
 
     def add_depth_line_of_linked_nodes(self, start_id: int, dir_coord: tp.Tuple[int, int], \
-                                       link_length: int, link_colour: str, link_draw: ArrowDraw, \
+                                       link_length: int, \
                                        node_specs: tp.List[tp.Optional[tp.Tuple[str, str, bool]]] \
                                        ) -> tp.List[int]:
 
@@ -69,12 +69,12 @@ class FormationManager:
         for spec in node_specs:
             if spec is not None:
                 pos = start_pos + unit_dir * link_length * count
-                new_id = self.add_node(spec[0], pos, spec[1], spec[2])
+                new_id = self.add_node(spec.text, pos, spec.node_col, spec.multibox)
 
-                if link_draw == ArrowDraw.BACK_ARROW:
-                    self.add_link(new_id, from_id, link_colour, ArrowDraw.FWD_ARROW)
-                elif link_draw != ArrowDraw.NO_LINK:
-                    self.add_link(from_id, new_id, link_colour, link_draw)
+                if spec.link_draw == ArrowDraw.BACK_ARROW:
+                    self.add_link(new_id, from_id, spec.link_col, ArrowDraw.FWD_ARROW)
+                elif spec.link_draw != ArrowDraw.NO_LINK:
+                    self.add_link(from_id, new_id, spec.link_col, spec.link_draw)
 
                 added_ids.append(new_id)
                 from_id = new_id
@@ -84,7 +84,6 @@ class FormationManager:
 
     def add_breadth_line_of_sibling_nodes(self, parent_id: int, start_coord: tp.Tuple[int, int], \
                                           end_coord: tp.Tuple[int, int], \
-                                          link_colour: str, link_draw: ArrowDraw, \
                                           node_specs: tp.List[tp.Optional[tp.Tuple[str, str, bool]]] \
                                           ) -> tp.List[int]:
 
@@ -103,11 +102,11 @@ class FormationManager:
         for spec in node_specs:
             if spec is not None:
                 pos = start_vec2 + rel_vec2 * count / (num_specs - 1)
-                new_id = self.add_node(spec[0], pos, spec[1], spec[2])
-                if link_draw == ArrowDraw.BACK_ARROW:
-                    self.add_link(new_id, parent_id, link_colour, ArrowDraw.FWD_ARROW)
-                elif link_draw != ArrowDraw.NO_LINK:
-                    self.add_link(parent_id, new_id, link_colour, link_draw)
+                new_id = self.add_node(spec.text, pos, spec.node_col, spec.multibox)
+                if spec.link_draw == ArrowDraw.BACK_ARROW:
+                    self.add_link(new_id, parent_id, spec.link_col, ArrowDraw.FWD_ARROW)
+                elif spec.link_draw != ArrowDraw.NO_LINK:
+                    self.add_link(parent_id, new_id, spec.link_col, spec.link_draw)
 
                 added_ids.append(new_id)
             count += 1
@@ -116,7 +115,6 @@ class FormationManager:
 
     def add_arc_of_sibling_nodes(self, parent_id: int, radius: int, start_dir_coord: tp.Tuple[int, int], \
                                  end_dir_coord: tp.Tuple[int, int], clockwise: bool, \
-                                 link_colour: str, link_draw: ArrowDraw, \
                                  node_specs: tp.List[tp.Optional[tp.Tuple[str, str, bool]]] \
                                  ) -> tp.List[int]:
 
@@ -150,11 +148,11 @@ class FormationManager:
                                 angles.flip_y(start_vec2), rotate_anticlockwise_by ))
                 pos = parent_pos + dir_vec * radius
 
-                new_id = self.add_node(spec[0], pos, spec[1], spec[2])
-                if link_draw == ArrowDraw.BACK_ARROW:
-                    self.add_link(new_id, parent_id, link_colour, ArrowDraw.FWD_ARROW)
-                elif link_draw != ArrowDraw.NO_LINK:
-                    self.add_link(parent_id, new_id, link_colour, link_draw)
+                new_id = self.add_node(spec.text, pos, spec.node_col, spec.multibox)
+                if spec.link_draw == ArrowDraw.BACK_ARROW:
+                    self.add_link(new_id, parent_id, spec.link_col, ArrowDraw.FWD_ARROW)
+                elif spec.link_draw != ArrowDraw.NO_LINK:
+                    self.add_link(parent_id, new_id, spec.link_col, spec.link_draw)
 
                 added_ids.append(new_id)
             count += 1

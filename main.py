@@ -1,5 +1,5 @@
 from canvas import Canvas
-from spec import ArrowDraw
+from spec import ArrowDraw, NodeSpec
 import model
 
 if __name__ == '__main__':
@@ -9,31 +9,32 @@ if __name__ == '__main__':
     mgr.add_link(n1, n2, "blue", ArrowDraw.FWD_ARROW)
 
     children = mgr.add_depth_line_of_linked_nodes( \
-        n2, (300,500), 200, "pink", ArrowDraw.FWD_ARROW, [
-        ("ghi", "red", False),
-        ("jkl", "green", False),
-        ("mno", "teal", True)
-    ])
+        n2, dir_coord=(300,500), link_length=200, node_specs=[
+            NodeSpec("ghi", node_col="red", link_col="pink", link_draw=ArrowDraw.FWD_ARROW),
+            NodeSpec("jkl", node_col="green", link_col="pink", link_draw=ArrowDraw.FWD_ARROW),
+            NodeSpec("mno", node_col="teal", link_col="pink", link_draw=ArrowDraw.FWD_ARROW, multibox=True)
+        ])
 
-    n3 = mgr.add_linked_node(children[0], "xyz", (600,500), "green", "purple", ArrowDraw.FWD_ARROW, False)
+    n3 = mgr.add_linked_node(children[0], "xyz", (600,500), node_col="green", link_col="purple", \
+                             arrow_draw=ArrowDraw.FWD_ARROW)
 
     mgr.add_breadth_line_of_sibling_nodes( \
-        n3, (800,700), (800,300), "teal", ArrowDraw.DOUBLE_ARROW, [
-        ("aaa", "red", False),
-        ("bbb", "red", False),
-        None,
-        ("ccc", "purple", True)
-    ])
+        n3, start_coord=(800,700), end_coord=(800,300), node_specs=[
+            NodeSpec("aaa", node_col="red", link_col="teal", link_draw=ArrowDraw.DOUBLE_ARROW),
+            NodeSpec("bbb", node_col="red", link_col="teal", link_draw=ArrowDraw.DOUBLE_ARROW),
+            None,
+            NodeSpec("ccc", node_col="purple", link_col="teal", link_draw=ArrowDraw.DOUBLE_ARROW, multibox=True)
+        ])
 
     mgr.add_arc_of_sibling_nodes( \
-        n1, 200, (700, 200), (300, 50), False, "lime", ArrowDraw.FWD_ARROW, [
-        ("dd", "blue", False),
-        ("ee", "pink", False),
-        ("ff", "magenta", False),
-        ("gg", "navy", False),
-        ("ii", "teal", False),
-        ("jj", "purple", False)
-    ])
+        n1, radius=200, start_dir_coord=(700, 200), end_dir_coord=(300, 50), clockwise=False, node_specs=[
+            NodeSpec("dd", node_col="blue", link_col="lime", link_draw=ArrowDraw.FWD_ARROW),
+            NodeSpec("ee", node_col="pink", link_col="lime", link_draw=ArrowDraw.FWD_ARROW),
+            NodeSpec("ff", node_col="magenta", link_col="lime", link_draw=ArrowDraw.NO_ARROW),
+            NodeSpec("gg", node_col="navy", link_col="lime", link_draw=ArrowDraw.BACK_ARROW),
+            NodeSpec("ii", node_col="teal", link_col="lime", link_draw=ArrowDraw.NO_LINK),
+            NodeSpec("jj", node_col="purple", link_col="lime", link_draw=ArrowDraw.FWD_ARROW)
+        ])
 
     c = Canvas(mgr.nodes, mgr.links)
     c.main_loop()
