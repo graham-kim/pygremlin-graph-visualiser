@@ -7,6 +7,7 @@ import math
 
 import model
 import angles
+import config as cfg
 
 def point_within_bounds(display_surface_size: tp.Tuple[int, int], point: tp.Tuple[int, int]) -> bool:
     return point[0] >= 0 \
@@ -180,7 +181,7 @@ class Link:
         self._to_node = to_node
         self._colour = colour
         self._width = width
-        self._arrowhead_length = 16
+        self._arrowhead_length = cfg.link_arrowhead_length
         self._bounds_check = bounds_check
         self._zoom_out_level = 0
 
@@ -250,15 +251,15 @@ class Link:
 class ModelToViewTranslator:
     def __init__(self, nodes: tp.List[model.Node], links: tp.List[model.Link], \
                  screen_size: tp.Tuple[int, int]):
-        self._big_font = pygame.font.SysFont("Arial", 24)
-        self._small_font = pygame.font.SysFont("Arial", 12)
-        self._tiny_font = pygame.font.SysFont("Arial", 6)
+        self._big_font = pygame.font.SysFont("Arial", cfg.big_font_size)
+        self._small_font = pygame.font.SysFont("Arial", cfg.small_font_size)
+        self._tiny_font = pygame.font.SysFont("Arial", cfg.tiny_font_size)
         self._nodes = {}
         self._links = []
         self.rect_within_bounds = partial(rect_within_bounds, screen_size)
         self.line_within_bounds = partial(line_within_bounds, screen_size)
 
-        self.offset_step = (screen_size[0]//4, screen_size[1]//4)
+        self.offset_step = cfg.offset_step
         self.total_offset = (0,0)
         self.zoom_out_level = 0
         self.max_zoom_level = 2
@@ -274,8 +275,8 @@ class ModelToViewTranslator:
                                pos=model_node.pos,
                                colour=text_col,
                                background=box_col,
-                               x_border=20,
-                               y_border=10,
+                               x_border=cfg.x_border_size,
+                               y_border=cfg.y_border_size,
                                bounds_check = self.rect_within_bounds,
                                multibox=model_node.multibox)
             self._nodes[id(model_node)] = render_node
@@ -289,51 +290,17 @@ class ModelToViewTranslator:
             render_link = Link(self._nodes[model_link.from_model_node_id],
                                self._nodes[model_link.to_model_node_id],
                                colour=self._get_colours(model_link.colour)[1],
-                               width=4,
+                               width=cfg.link_width,
                                bounds_check = self.line_within_bounds)
             self._links.append(render_link)
 
     def _get_colours(self, colour_str: str) -> tp.Tuple[tp.Tuple[int, int, int], \
                                                         tp.Tuple[int, int, int]]:
-        if colour_str == "red":
-            box_col = (255, 0, 0)
-            text_col = (0, 0, 0)
-        elif colour_str == "orange":
-            box_col = (255, 128, 0)
-            text_col = (0, 0, 0)
-        elif colour_str == "yellow":
-            box_col = (255, 255, 0)
-            text_col = (0, 0, 0)
-        elif colour_str == "lime":
-            box_col = (128, 255, 0)
-            text_col = (0, 0, 0)
-        elif colour_str == "green":
-            box_col = (0, 255, 0)
-            text_col = (0, 0, 0)
-        elif colour_str == "teal":
-            box_col = (0, 255, 255)
-            text_col = (0, 0, 0)
-        elif colour_str == "blue":
-            box_col = (0, 128, 255)
-            text_col = (0, 0, 0)
-        elif colour_str == "navy":
-            box_col = (0, 0, 255)
-            text_col = (255, 255, 255)
-        elif colour_str == "black":
-            box_col = (0, 0, 0)
-            text_col = (255, 255, 255)
-        elif colour_str == "purple":
-            box_col = (128, 0, 255)
-            text_col = (255, 255, 255)
-        elif colour_str == "magenta":
-            box_col = (255, 0, 255)
-            text_col = (0, 0, 0)
-        elif colour_str == "pink":
-            box_col = (255, 128, 255)
-            text_col = (0, 0, 0)
-        else:
+        if colour_str not in cfg.colour_set.keys():
             raise ValueError("unrecognised colour name: {}".format(colour_str))
-        return text_col, box_col
+
+        colours = cfg.colour_set[colour_str]
+        return colours.text_col, colours.box_col
 
     def _draw_links_then_nodes(self, surface):
         for link in self._links:

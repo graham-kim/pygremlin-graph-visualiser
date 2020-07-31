@@ -5,11 +5,12 @@ from datetime import datetime
 
 import render
 import model
+import config as cfg
 
 class Canvas:
     def __init__(self, nodes: tp.List[model.Node], links: tp.List[model.Link]):
         self.fps = 30
-        self.screen_size = (800, 600)
+        self.screen_size = cfg.screen_size
 
         pygame.init()
         self.translator = render.ModelToViewTranslator(nodes, links, self.screen_size)
