@@ -176,12 +176,14 @@ class Node:
 
 class Link:
     def __init__(self, from_node: Node, to_node: Node, colour: tp.Tuple[int, int, int], width: int, \
+                 arrow_draw: model.ArrowDraw, \
                  bounds_check: tp.Callable[[tp.Tuple[int, int], tp.Tuple[int, int]], bool]):
         self._from_node = from_node
         self._to_node = to_node
         self._colour = colour
         self._width = width
         self._arrowhead_length = cfg.link_arrowhead_length
+        self._arrow_draw = arrow_draw
         self._bounds_check = bounds_check
         self._zoom_out_level = 0
 
@@ -201,6 +203,9 @@ class Link:
         Returns False if, during the above calculation, it discovers the nodes are overlapping.
         That means the link would be entirely obscured.
         """
+        if self._arrow_draw == model.ArrowDraw.NO_ARROW:
+            return
+
         from_vec2 = angles.vec2(from_coord)
         to_vec2 = angles.vec2(to_coord)
 
@@ -221,6 +226,15 @@ class Link:
 
         pygame.draw.line(surface, self._colour, draw_arrow_at, left_endpoint, self._width)
         pygame.draw.line(surface, self._colour, draw_arrow_at, right_endpoint, self._width)
+
+        if self._arrow_draw == model.ArrowDraw.DOUBLE_ARROW:
+            draw_arrow_at = intersection_from + (rel_vec2 * 1 / 3)
+
+            left_endpoint, right_endpoint = self._get_arrow_endpoints(-rel_vec2, draw_arrow_at)
+
+            pygame.draw.line(surface, self._colour, draw_arrow_at, left_endpoint, self._width)
+            pygame.draw.line(surface, self._colour, draw_arrow_at, right_endpoint, self._width)
+
         return True
 
     def _get_arrow_endpoints(self, rel_vec2: np.array, draw_arrow_at: np.array \
@@ -291,6 +305,7 @@ class ModelToViewTranslator:
                                self._nodes[model_link.to_model_node_id],
                                colour=self._get_colours(model_link.colour)[1],
                                width=cfg.link_width,
+                               arrow_draw=model_link.arrow_draw,
                                bounds_check = self.line_within_bounds)
             self._links.append(render_link)
 
