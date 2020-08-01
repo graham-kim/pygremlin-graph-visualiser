@@ -33,7 +33,7 @@ def line_within_bounds(display_surface_size: tp.Tuple[int, int], \
         or point_within_bounds(display_surface_size, line_end)
 
 class Node:
-    def __init__(self, text: str, big_font, small_font, tiny_font, \
+    def __init__(self, text: tp.Optional[str], big_font, small_font, tiny_font, \
                  pos: tp.Tuple[int, int], colour: tp.Tuple[int, int, int], \
                  background: tp.Tuple[int, int, int], x_border: int, y_border: int, \
                  bounds_check: tp.Callable[[tp.Tuple[int, int, int, int]], bool], multibox: bool):
@@ -54,7 +54,10 @@ class Node:
         self._current_text_surface = self._big_text_surface
         self._multibox_factor = 4
 
-    def _render_text_surface(self, text, font, colour, background) -> pygame.Surface:
+    def _render_text_surface(self, text: tp.Optional[str], font, colour: tp.Tuple[int, int, int], \
+                             background: tp.Tuple[int, int, int]) -> tp.Optional[pygame.Surface]:
+        if not text:
+            return None
         # antialias = True
         if '\n' not in text:
             return font.render(text, True, colour, background)
@@ -79,6 +82,9 @@ class Node:
         return out_surf
 
     def draw_on(self, surface):
+        if self._current_text_surface is None:
+            return
+
         adjusted_pos = self._adjust_view_pos_for_centering_box()
         border = self._border_dimen(adjusted_pos)
         if self._bounds_check(border):
@@ -102,9 +108,16 @@ class Node:
                 self._view_pos[1] - text_rect.height/2)
 
     def consider_new_offset(self, offset: tp.Tuple[int, int]) -> bool:
+        """
+        Returns True if the node would appear on the screen given the new offset.
+        """
         new_view_pos_at_full_zoom = (self._model_pos[0] + offset[0], self._model_pos[1] + offset[1])
         self._new_view_pos = (new_view_pos_at_full_zoom[0] // 2 ** self._zoom_out_level,
                               new_view_pos_at_full_zoom[1] // 2 ** self._zoom_out_level)
+
+        if self._current_text_surface is None:
+            return False
+
         new_border = self._border_dimen(self._new_view_pos)
         return self._bounds_check(new_border)
 
@@ -143,7 +156,13 @@ class Node:
         """
         Get the fraction of the relative link vector to the intersection and the actual coordinates for it
         between the link and the node's rectangle.
+
+        link_from and link_to assume the link is pointing from this node to somewhere else.
+        It's up to the caller to flip the results if the link is actually the reverse.
         """
+        if self._current_text_surface is None:
+            return 0, self.center
+
         box_bounds = self.box_bounds
 
         top_left_vec2 = np.array((box_bounds[0], box_bounds[1]))
@@ -189,7 +208,10 @@ class Node:
         return self._view_pos
 
     @property
-    def box_bounds(self) -> tp.Tuple[int, int, int, int]:
+    def box_bounds(self) -> tp.Optional[tp.Tuple[int, int, int, int]]:
+        if self._current_text_surface is None:
+            return None
+
         border_dimen = self._border_dimen(self._adjust_view_pos_for_centering_box())
         if self._multibox:
             border_dimen = (border_dimen[0] - border_dimen[2]/self._multibox_factor,
