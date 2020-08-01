@@ -16,3 +16,11 @@ class NodeSpec:
         self.link_col = link_col
         self.link_draw = link_draw
         self.multibox = multibox
+
+class NullNode(NodeSpec):
+    def __init__(self, link_col: str, link_draw: ArrowDraw):
+        self.text = ""
+        self.node_col = "black" # gets ignored
+        self.link_col = link_col
+        self.link_draw = link_draw
+        self.multibox = False

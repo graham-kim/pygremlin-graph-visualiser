@@ -1,5 +1,5 @@
 from canvas import Canvas
-from spec import ArrowDraw, NodeSpec
+from spec import ArrowDraw, NodeSpec, NullNode
 import model
 
 if __name__ == '__main__':
@@ -12,7 +12,7 @@ if __name__ == '__main__':
         n2, dir_coord=(300,500), link_length=200, node_specs=[
             NodeSpec("ghi", node_col="red", link_col="pink", link_draw=ArrowDraw.FWD_ARROW),
             NodeSpec("jkl", node_col="green", link_col="pink", link_draw=ArrowDraw.FWD_ARROW),
-            NodeSpec("", node_col="teal", link_col="pink", link_draw=ArrowDraw.FWD_ARROW, multibox=True)
+            NullNode(link_col="pink", link_draw=ArrowDraw.DOUBLE_ARROW)
         ])
 
     n3 = mgr.add_linked_node(children[0], (600,500), NodeSpec("xyz", node_col="green", link_col="purple", \
