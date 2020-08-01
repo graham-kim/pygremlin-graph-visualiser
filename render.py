@@ -56,7 +56,27 @@ class Node:
 
     def _render_text_surface(self, text, font, colour, background) -> pygame.Surface:
         # antialias = True
-        return font.render(text, True, colour, background)
+        if '\n' not in text:
+            return font.render(text, True, colour, background)
+
+        line_surfs = []
+        total_height = 0
+        max_width = 0
+        for line in text.strip().split('\n'):
+            surf = font.render(line, True, colour, background)
+            total_height += surf.get_height()
+            max_width = max(max_width, surf.get_width())
+            line_surfs.append(surf)
+
+        out_surf = pygame.Surface((max_width, total_height))
+        out_surf.fill(background)
+        y = 0
+        for surf in line_surfs:
+            x = (max_width - surf.get_width()) / 2
+            out_surf.blit(surf, (x,y))
+            y += surf.get_height()
+
+        return out_surf
 
     def draw_on(self, surface):
         adjusted_pos = self._adjust_view_pos_for_centering_box()
