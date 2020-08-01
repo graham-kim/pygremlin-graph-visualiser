@@ -48,11 +48,15 @@ class Node:
         self._multibox = multibox
         self._zoom_out_level = 0
 
-        self._big_text_surface = big_font.render(text, True, colour, background)
-        self._small_text_surface = small_font.render(text, True, colour, background)
-        self._tiny_text_surface = tiny_font.render(text, True, colour, background)
+        self._big_text_surface = self._render_text_surface(text, big_font, colour, background)
+        self._small_text_surface = self._render_text_surface(text, small_font, colour, background)
+        self._tiny_text_surface = self._render_text_surface(text, tiny_font, colour, background)
         self._current_text_surface = self._big_text_surface
         self._multibox_factor = 4
+
+    def _render_text_surface(self, text, font, colour, background) -> pygame.Surface:
+        # antialias = True
+        return font.render(text, True, colour, background)
 
     def draw_on(self, surface):
         adjusted_pos = self._adjust_view_pos_for_centering_box()
