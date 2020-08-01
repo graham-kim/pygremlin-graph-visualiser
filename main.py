@@ -15,8 +15,8 @@ if __name__ == '__main__':
             NodeSpec("mno", node_col="teal", link_col="pink", link_draw=ArrowDraw.FWD_ARROW, multibox=True)
         ])
 
-    n3 = mgr.add_linked_node(children[0], "xyz", (600,500), node_col="green", link_col="purple", \
-                             arrow_draw=ArrowDraw.FWD_ARROW)
+    n3 = mgr.add_linked_node(children[0], (600,500), NodeSpec("xyz", node_col="green", link_col="purple", \
+                             link_draw=ArrowDraw.FWD_ARROW))
 
     mgr.add_breadth_line_of_sibling_nodes( \
         n3, start_coord=(800,700), end_coord=(800,300), node_specs=[

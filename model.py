@@ -48,15 +48,14 @@ class FormationManager:
     def add_link(self, from_id: int, to_id: int, colour: str, arrow_draw: ArrowDraw):
         self._links.append( Link(from_id, to_id, colour, arrow_draw) )
 
-    def add_linked_node(self, from_id: int, text: str, pos: tp.Tuple[int, int], \
-                        node_col: str, link_col: str, arrow_draw: ArrowDraw, multibox: bool = False) -> int:
-        new_id = self.add_node(text, pos, node_col, multibox)
-        self.add_link(from_id, new_id, link_col, arrow_draw)
+    def add_linked_node(self, from_id: int, pos: tp.Tuple[int, int], spec: NodeSpec) -> int:
+        new_id = self.add_node(spec.text, pos, spec.node_col, spec.multibox)
+        self.add_link(from_id, new_id, spec.link_col, spec.link_draw)
         return new_id
 
     def add_depth_line_of_linked_nodes(self, start_id: int, dir_coord: tp.Tuple[int, int], \
                                        link_length: int, \
-                                       node_specs: tp.List[tp.Optional[tp.Tuple[str, str, bool]]] \
+                                       node_specs: tp.List[tp.Optional[NodeSpec]] \
                                        ) -> tp.List[int]:
 
         added_ids = []
@@ -84,7 +83,7 @@ class FormationManager:
 
     def add_breadth_line_of_sibling_nodes(self, parent_id: int, start_coord: tp.Tuple[int, int], \
                                           end_coord: tp.Tuple[int, int], \
-                                          node_specs: tp.List[tp.Optional[tp.Tuple[str, str, bool]]] \
+                                          node_specs: tp.List[tp.Optional[NodeSpec]] \
                                           ) -> tp.List[int]:
 
         num_specs = len(node_specs)
@@ -115,7 +114,7 @@ class FormationManager:
 
     def add_arc_of_sibling_nodes(self, parent_id: int, radius: int, start_dir_coord: tp.Tuple[int, int], \
                                  end_dir_coord: tp.Tuple[int, int], clockwise: bool, \
-                                 node_specs: tp.List[tp.Optional[tp.Tuple[str, str, bool]]] \
+                                 node_specs: tp.List[tp.Optional[NodeSpec]] \
                                  ) -> tp.List[int]:
 
         num_specs = len(node_specs)
