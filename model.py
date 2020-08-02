@@ -24,6 +24,9 @@ class Link:
         self.arrow_draw = arrow_draw
         self.second_colour = second_colour # for DUAL_LINK
 
+        if second_colour is not None and arrow_draw != ArrowDraw.DUAL_LINK:
+            raise ValueError("second_colour is not None yet arrow_draw is not DUAL_LINK")
+
 class FormationManager:
     def __init__(self):
         self._nodes = {}
@@ -46,15 +49,15 @@ class FormationManager:
         self._nodes[new_id] = new_node
         return new_id
 
-    def add_link(self, from_id: int, to_id: int, colour: str, arrow_draw: ArrowDraw):
-        self._links.append( Link(from_id, to_id, colour, arrow_draw) )
+    def add_link(self, from_id: int, to_id: int, colour: str, arrow_draw: ArrowDraw, link_2_col: tp.Optional[str]):
+        self._links.append( Link(from_id, to_id, colour, arrow_draw, link_2_col) )
 
     def add_dual_link(self, from_id: int, to_id: int, colour: str, second_colour: str):
-        self._links.append( Link(from_id, to_id, colour, ArrowDraw.DUAL_LINK, second_colour) )
+        self.add_link(from_id, to_id, colour, ArrowDraw.DUAL_LINK, second_colour)
 
     def add_linked_node(self, from_id: int, pos: tp.Tuple[int, int], spec: NodeSpec) -> int:
         new_id = self.add_node(spec.text, pos, spec.node_col, spec.multibox)
-        self.add_link(from_id, new_id, spec.link_col, spec.link_draw)
+        self.add_link(from_id, new_id, spec.link_col, spec.link_draw, spec.link_2_col)
         return new_id
 
     def add_depth_line_of_linked_nodes(self, start_id: int, dir_coord: tp.Tuple[int, int], \
@@ -75,9 +78,9 @@ class FormationManager:
                 new_id = self.add_node(spec.text, pos, spec.node_col, spec.multibox)
 
                 if spec.link_draw == ArrowDraw.BACK_ARROW:
-                    self.add_link(new_id, from_id, spec.link_col, ArrowDraw.FWD_ARROW)
+                    self.add_link(new_id, from_id, spec.link_col, ArrowDraw.FWD_ARROW, None)
                 elif spec.link_draw != ArrowDraw.NO_LINK:
-                    self.add_link(from_id, new_id, spec.link_col, spec.link_draw)
+                    self.add_link(from_id, new_id, spec.link_col, spec.link_draw, spec.link_2_col)
 
                 added_ids.append(new_id)
                 from_id = new_id
@@ -107,9 +110,9 @@ class FormationManager:
                 pos = start_vec2 + rel_vec2 * count / (num_specs - 1)
                 new_id = self.add_node(spec.text, pos, spec.node_col, spec.multibox)
                 if spec.link_draw == ArrowDraw.BACK_ARROW:
-                    self.add_link(new_id, parent_id, spec.link_col, ArrowDraw.FWD_ARROW)
+                    self.add_link(new_id, parent_id, spec.link_col, ArrowDraw.FWD_ARROW, None)
                 elif spec.link_draw != ArrowDraw.NO_LINK:
-                    self.add_link(parent_id, new_id, spec.link_col, spec.link_draw)
+                    self.add_link(parent_id, new_id, spec.link_col, spec.link_draw, spec.link_2_col)
 
                 added_ids.append(new_id)
             count += 1
@@ -153,9 +156,9 @@ class FormationManager:
 
                 new_id = self.add_node(spec.text, pos, spec.node_col, spec.multibox)
                 if spec.link_draw == ArrowDraw.BACK_ARROW:
-                    self.add_link(new_id, parent_id, spec.link_col, ArrowDraw.FWD_ARROW)
+                    self.add_link(new_id, parent_id, spec.link_col, ArrowDraw.FWD_ARROW, None)
                 elif spec.link_draw != ArrowDraw.NO_LINK:
-                    self.add_link(parent_id, new_id, spec.link_col, spec.link_draw)
+                    self.add_link(parent_id, new_id, spec.link_col, spec.link_draw, spec.link_2_col)
 
                 added_ids.append(new_id)
             count += 1

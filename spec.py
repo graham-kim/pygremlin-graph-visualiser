@@ -12,12 +12,12 @@ class ArrowDraw(Enum):
 
 class NodeSpec:
     def __init__(self, text: str, node_col: str, link_col: str, link_draw: ArrowDraw, \
-                 link_second_col: tp.Optional[str]=None, multibox: bool=False):
+                 link_2_col: tp.Optional[str]=None, multibox: bool=False):
         self.text = text
         self.node_col = node_col
         self.link_col = link_col
         self.link_draw = link_draw
-        self.link_second_col = link_second_col
+        self.link_2_col = link_2_col
         self.multibox = multibox
 
 class NullNode(NodeSpec):
@@ -26,5 +26,5 @@ class NullNode(NodeSpec):
         self.node_col = "black" # gets ignored
         self.link_col = link_col
         self.link_draw = link_draw
-        self.link_second_col = None
+        self.link_2_col = None
         self.multibox = False

@@ -16,7 +16,7 @@ if __name__ == '__main__':
         ])
 
     n3 = mgr.add_linked_node(children[0], (600,500), NodeSpec("xyz", node_col="green", link_col="purple", \
-                             link_draw=ArrowDraw.FWD_ARROW))
+                             link_draw=ArrowDraw.DUAL_LINK, link_2_col="orange"))
 
     mgr.add_breadth_line_of_sibling_nodes( \
         n3, start_coord=(800,700), end_coord=(800,300), node_specs=[
