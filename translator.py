@@ -135,6 +135,9 @@ class ModelToViewTranslator:
             self.total_offset = new_offset
             for node in self._nodes.values():
                 node.accept_new_offset()
+            for label in self._labels:
+                label.consider_new_offset(new_offset)
+                label.accept_new_offset()
             return True
         else:
             print("Scroll rejected: there would be no node to draw")
@@ -156,6 +159,8 @@ class ModelToViewTranslator:
             node.zoom_in()
         for link in self._links:
             link.zoom_in()
+        for label in self._labels:
+            label.zoom_in()
         return True
 
     def zoom_out(self) -> bool:
@@ -167,6 +172,8 @@ class ModelToViewTranslator:
             node.zoom_out()
         for link in self._links:
             link.zoom_out()
+        for label in self._labels:
+            label.zoom_out()
         return True
 
     def _view_to_model_coords(self, view_coord: tp.Tuple[int, int]) -> tp.Tuple[int, int]:
