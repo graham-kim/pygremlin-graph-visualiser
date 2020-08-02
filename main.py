@@ -6,7 +6,6 @@ if __name__ == '__main__':
     mgr = FormationManager()
     n1 = mgr.add_node("abc\nwiga", (400,300), "red", multibox=True)
     n2 = mgr.add_node("def", (200,100), "green")
-    mgr.add_label("waha", (200,200), "red")
     mgr.add_dual_link(n1, n2, "blue", "red")
 
     children = mgr.add_depth_line_of_linked_nodes( \
@@ -15,6 +14,8 @@ if __name__ == '__main__':
             NodeSpec("jkl", node_col="green", link_col="pink", link_draw=ArrowDraw.FWD_ARROW),
             NullNode(link_col="pink", link_draw=ArrowDraw.DOUBLE_ARROW)
         ])
+
+    mgr.add_label("waha", mgr.pos_perp_to(n2, children[0], 200, to_left=False), "red")
 
     n3 = mgr.add_linked_node(children[0], (600,500), NodeSpec("xyz", node_col="green", link_col="purple", \
                              link_draw=ArrowDraw.DUAL_LINK, link_2_col="orange"))

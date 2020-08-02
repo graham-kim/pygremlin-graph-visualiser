@@ -31,6 +31,20 @@ class FormationManager:
     def pos_of(self, node_id: int) -> np.array:
         return np.array(self._nodes[node_id].pos)
 
+    def pos_perp_to(self, from_id: int, to_id: int, shift_breadth: int, to_left: bool) -> np.array:
+        from_vec2 = np.array(self._nodes[from_id].pos)
+        to_vec2 = np.array(self._nodes[to_id].pos)
+        rel_vec2 = to_vec2 - from_vec2
+        flipped_y_unit_rel = angles.flip_y( angles.unit(rel_vec2) )
+        if to_left:
+            rotated_dir = angles.flip_y( \
+                            angles.rotate_vector_to_left_by_90_deg( flipped_y_unit_rel ) )
+        else:
+            rotated_dir = angles.flip_y( \
+                            angles.rotate_vector_to_right_by_90_deg( flipped_y_unit_rel ) )
+
+        return (from_vec2 + rel_vec2 / 2 + rotated_dir * shift_breadth).astype(int)
+
     def add_node(self, text: str, pos: tp.Tuple[int, int], colour: str, multibox: bool = False) -> int:
         new_node = Node(text, pos, colour, multibox)
         new_id = id(new_node)
