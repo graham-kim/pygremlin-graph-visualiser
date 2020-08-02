@@ -17,11 +17,12 @@ class Node:
         self.multibox = multibox
 
 class Link:
-    def __init__(self, from_id: int, to_id: int, colour: str, arrow_draw: ArrowDraw):
+    def __init__(self, from_id: int, to_id: int, colour: str, arrow_draw: ArrowDraw, second_colour: tp.Optional[str] = None):
         self.from_model_node_id = from_id
         self.to_model_node_id = to_id
         self.colour = colour
         self.arrow_draw = arrow_draw
+        self.second_colour = second_colour # for DUAL_LINK
 
 class FormationManager:
     def __init__(self):

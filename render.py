@@ -35,15 +35,15 @@ def line_within_bounds(display_surface_size: tp.Tuple[int, int], \
 class Node:
     def __init__(self, text: tp.Optional[str], big_font, small_font, tiny_font, \
                  pos: tp.Tuple[int, int], colour: tp.Tuple[int, int, int], \
-                 background: tp.Tuple[int, int, int], x_border: int, y_border: int, \
+                 background: tp.Tuple[int, int, int], \
                  bounds_check: tp.Callable[[tp.Tuple[int, int, int, int]], bool], multibox: bool):
         self._text = text
         self._background = background
         self._model_pos = pos
         self._view_pos = pos
         self._new_view_pos = None
-        self.x_border = x_border
-        self.y_border = y_border
+        self.x_border = cfg.x_border_size
+        self.y_border = cfg.y_border_size
         self._bounds_check = bounds_check
         self._multibox = multibox
         self._zoom_out_level = 0
@@ -52,7 +52,7 @@ class Node:
         self._small_text_surface = self._render_text_surface(text, small_font, colour, background)
         self._tiny_text_surface = self._render_text_surface(text, tiny_font, colour, background)
         self._current_text_surface = self._big_text_surface
-        self._multibox_factor = 4
+        self._multibox_factor = cfg.multibox_factor
 
     def _render_text_surface(self, text: tp.Optional[str], font, colour: tp.Tuple[int, int, int], \
                              background: tp.Tuple[int, int, int]) -> tp.Optional[pygame.Surface]:
@@ -223,13 +223,16 @@ class Node:
 class Link:
     def __init__(self, from_node: Node, to_node: Node, colour: tp.Tuple[int, int, int], width: int, \
                  arrow_draw: model.ArrowDraw, \
-                 bounds_check: tp.Callable[[tp.Tuple[int, int], tp.Tuple[int, int]], bool]):
+                 bounds_check: tp.Callable[[tp.Tuple[int, int], tp.Tuple[int, int]], bool], \
+                 second_colour: tp.Optional[tp.Tuple[int, int, int]]):
         self._from_node = from_node
         self._to_node = to_node
         self._colour = colour
+        self._second_colour = second_colour # If not None, draw dual link
         self._width = width
         self._arrowhead_length = cfg.link_arrowhead_length
         self._arrow_draw = arrow_draw
+        self._dual_link_gap = cfg.dual_link_gap
         self._bounds_check = bounds_check
         self._zoom_out_level = 0
 
@@ -237,11 +240,15 @@ class Link:
         from_coord = self._from_node.center
         to_coord = self._to_node.center
         if self._bounds_check(from_coord, to_coord):
-            if self._draw_arrowhead(surface, from_coord, to_coord):
-                pygame.draw.line(surface, self._colour, from_coord, to_coord, self._width)
+            if self._second_colour is None:
+                if self._draw_arrowhead(surface, from_coord, to_coord):
+                    pygame.draw.line(surface, self._colour, from_coord, to_coord, self._width)
+            else:
+                if self._draw_arrowhead(surface, from_coord, to_coord, dry_run=True):
+                    self._draw_dual_link(surface, from_coord, to_coord)
 
-    def _draw_arrowhead(self, surface, from_coord: tp.Tuple[int, int], to_coord: tp.Tuple[int, int] \
-                        ) -> bool:
+    def _draw_arrowhead(self, surface, from_coord: tp.Tuple[int, int], to_coord: tp.Tuple[int, int], \
+                        dry_run: bool=False) -> bool:
         """
         Calculates where to draw the arrowhead based on where the link would be visible between
         the two nodes, i.e. from the two intersection points.
@@ -249,8 +256,6 @@ class Link:
         Returns False if, during the above calculation, it discovers the nodes are overlapping.
         That means the link would be entirely obscured.
         """
-        if self._arrow_draw == model.ArrowDraw.NO_ARROW:
-            return True
 
         from_vec2 = angles.vec2(from_coord)
         to_vec2 = angles.vec2(to_coord)
@@ -264,6 +269,9 @@ class Link:
         if rel_vec_frac_to < rel_vec_frac_from:
             # The nodes have overlapped, the link would be completely obscured
             return False
+
+        if dry_run or self._arrow_draw == model.ArrowDraw.NO_ARROW:
+            return True
 
         rel_vec2 = intersection_to - intersection_from
         draw_arrow_at = intersection_from + (rel_vec2 * 2 / 3)
@@ -297,6 +305,9 @@ class Link:
         right_endpoint = draw_arrow_at + right_unit_vec * self._arrowhead_length
 
         return left_endpoint, right_endpoint
+
+    def _draw_dual_link(self, surface, from_coord: tp.Tuple[int, int], to_coord: tp.Tuple[int, int]):
+        pass
 
     def zoom_out(self):
         self._zoom_out_level += 1
@@ -335,9 +346,7 @@ class ModelToViewTranslator:
                                pos=model_node.pos,
                                colour=text_col,
                                background=box_col,
-                               x_border=cfg.x_border_size,
-                               y_border=cfg.y_border_size,
-                               bounds_check = self.rect_within_bounds,
+                               bounds_check=self.rect_within_bounds,
                                multibox=model_node.multibox)
             self._nodes[id(model_node)] = render_node
             if point_within_bounds(screen_size, model_node.pos):
@@ -347,16 +356,19 @@ class ModelToViewTranslator:
             raise ValueError("At least one node must start within the canvas bounds")
 
         for model_link in links:
+            sec_col = None if model_link.second_colour is None \
+                 else self._get_colours(model_link.second_colour)[1]
             render_link = Link(self._nodes[model_link.from_model_node_id],
                                self._nodes[model_link.to_model_node_id],
                                colour=self._get_colours(model_link.colour)[1],
                                width=cfg.link_width,
                                arrow_draw=model_link.arrow_draw,
-                               bounds_check = self.line_within_bounds)
+                               second_colour=sec_col,
+                               bounds_check=self.line_within_bounds)
             self._links.append(render_link)
 
     def _get_colours(self, colour_str: str) -> tp.Tuple[tp.Tuple[int, int, int], \
-                                                        tp.Tuple[int, int, int]]:
+                                                            tp.Tuple[int, int, int]]:
         if colour_str not in cfg.colour_set.keys():
             raise ValueError("unrecognised colour name: {}".format(colour_str))
 
