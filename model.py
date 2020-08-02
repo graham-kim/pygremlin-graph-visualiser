@@ -49,6 +49,9 @@ class FormationManager:
     def add_link(self, from_id: int, to_id: int, colour: str, arrow_draw: ArrowDraw):
         self._links.append( Link(from_id, to_id, colour, arrow_draw) )
 
+    def add_dual_link(self, from_id: int, to_id: int, colour: str, second_colour: str):
+        self._links.append( Link(from_id, to_id, colour, ArrowDraw.DUAL_LINK, second_colour) )
+
     def add_linked_node(self, from_id: int, pos: tp.Tuple[int, int], spec: NodeSpec) -> int:
         new_id = self.add_node(spec.text, pos, spec.node_col, spec.multibox)
         self.add_link(from_id, new_id, spec.link_col, spec.link_draw)

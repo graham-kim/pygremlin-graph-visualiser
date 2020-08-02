@@ -13,7 +13,7 @@ multibox_factor = 4
 # so zooming has a whole number of pixels to work with
 link_width = 4
 link_arrowhead_length = 16
-dual_link_gap = 16
+dual_link_gap = 8
 
 class ColourPair:
     def __init__(self, box_col, text_col):

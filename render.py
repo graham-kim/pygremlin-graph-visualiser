@@ -248,7 +248,7 @@ class Link:
                     self._draw_dual_link(surface, from_coord, to_coord)
 
     def _draw_arrowhead(self, surface, from_coord: tp.Tuple[int, int], to_coord: tp.Tuple[int, int], \
-                        dry_run: bool=False) -> bool:
+                        dry_run: bool=False, is_second_link: bool=False) -> bool:
         """
         Calculates where to draw the arrowhead based on where the link would be visible between
         the two nodes, i.e. from the two intersection points.
@@ -260,10 +260,16 @@ class Link:
         from_vec2 = angles.vec2(from_coord)
         to_vec2 = angles.vec2(to_coord)
 
-        rel_vec_frac_from, intersection_from = \
-            self._from_node.get_intersection_point_to_link(from_vec2, to_vec2)
-        rel_vec_frac_to, intersection_to = \
-            self._to_node.get_intersection_point_to_link(to_vec2, from_vec2)
+        if not is_second_link:
+            rel_vec_frac_from, intersection_from = \
+                self._from_node.get_intersection_point_to_link(from_vec2, to_vec2)
+            rel_vec_frac_to, intersection_to = \
+                self._to_node.get_intersection_point_to_link(to_vec2, from_vec2)
+        else:
+            rel_vec_frac_from, intersection_from = \
+                self._to_node.get_intersection_point_to_link(to_vec2, from_vec2)
+            rel_vec_frac_to, intersection_to = \
+                self._from_node.get_intersection_point_to_link(from_vec2, to_vec2)
         rel_vec_frac_to = 1 - rel_vec_frac_to
 
         if rel_vec_frac_to < rel_vec_frac_from:
@@ -278,16 +284,19 @@ class Link:
 
         left_endpoint, right_endpoint = self._get_arrow_endpoints(rel_vec2, draw_arrow_at)
 
-        pygame.draw.line(surface, self._colour, draw_arrow_at, left_endpoint, self._width)
-        pygame.draw.line(surface, self._colour, draw_arrow_at, right_endpoint, self._width)
+        colour = self._second_colour if is_second_link \
+            else self._colour
 
-        if self._arrow_draw == model.ArrowDraw.DOUBLE_ARROW:
+        pygame.draw.line(surface, colour, draw_arrow_at, left_endpoint, self._width)
+        pygame.draw.line(surface, colour, draw_arrow_at, right_endpoint, self._width)
+
+        if not is_second_link and self._arrow_draw == model.ArrowDraw.DOUBLE_ARROW:
             draw_arrow_at = intersection_from + (rel_vec2 * 1 / 3)
 
             left_endpoint, right_endpoint = self._get_arrow_endpoints(-rel_vec2, draw_arrow_at)
 
-            pygame.draw.line(surface, self._colour, draw_arrow_at, left_endpoint, self._width)
-            pygame.draw.line(surface, self._colour, draw_arrow_at, right_endpoint, self._width)
+            pygame.draw.line(surface, colour, draw_arrow_at, left_endpoint, self._width)
+            pygame.draw.line(surface, colour, draw_arrow_at, right_endpoint, self._width)
 
         return True
 
@@ -307,17 +316,31 @@ class Link:
         return left_endpoint, right_endpoint
 
     def _draw_dual_link(self, surface, from_coord: tp.Tuple[int, int], to_coord: tp.Tuple[int, int]):
-        pass
+        from_coord = np.array(from_coord)
+        to_coord = np.array(to_coord)
+
+        left_from, left_to = \
+            angles.shift_pair_pos_by(from_coord, to_coord, self._dual_link_gap, to_left=True)
+        right_from, right_to = \
+            angles.shift_pair_pos_by(from_coord, to_coord, self._dual_link_gap, to_left=False)
+
+        self._draw_arrowhead(surface, left_from, left_to)
+        pygame.draw.line(surface, self._colour, left_from, left_to, self._width)
+
+        self._draw_arrowhead(surface, right_from, right_to, is_second_link=True)
+        pygame.draw.line(surface, self._second_colour, right_from, right_to, self._width)
 
     def zoom_out(self):
         self._zoom_out_level += 1
         self._width //= 2
         self._arrowhead_length //= 2
+        self._dual_link_gap //= 2
 
     def zoom_in(self):
         self._zoom_out_level -= 1
         self._width *= 2
         self._arrowhead_length *= 2
+        self._dual_link_gap *= 2
 
 class ModelToViewTranslator:
     def __init__(self, nodes: tp.List[model.Node], links: tp.List[model.Link], \

@@ -52,11 +52,28 @@ def get_unit_vector_after_rotating(start_vec: tp.Union[np.array, tp.Tuple[float,
     ans_vec = (math.cos(new_angle_rad), math.sin(new_angle_rad))
     return unit(ans_vec)
 
-def rotate_vector_right_angle(a: np.array) -> np.array:
+def rotate_vector_to_left_by_90_deg(a: np.array) -> np.array:
     b = np.empty_like(a)
     b[0] = -a[1]
     b[1] = a[0]
     return b
+
+def rotate_vector_to_right_by_90_deg(a: np.array) -> np.array:
+    b = np.empty_like(a)
+    b[0] = a[1]
+    b[1] = -a[0]
+    return b
+
+def shift_pair_pos_by(from_pos: np.array, to_pos: np.array, length: float, to_left: bool \
+                     ) -> tp.Tuple[np.array, np.array]:
+    rel_vec = unit(to_pos - from_pos)
+    if to_left:
+        rotated_rel = rotate_vector_to_left_by_90_deg(rel_vec)
+    else:
+        rotated_rel = rotate_vector_to_right_by_90_deg(rel_vec)
+
+    shift_by = (rotated_rel * length).astype(int)
+    return (from_pos + shift_by, to_pos + shift_by)
 
 def line_intersection(a1: np.array, a2: np.array, b1: np.array, b2: np.array \
                      ) -> tp.Tuple[float, np.array]:
@@ -76,7 +93,7 @@ def line_intersection(a1: np.array, a2: np.array, b1: np.array, b2: np.array \
     # (a1 -> b1 -> intersection_point) dot A_perpendicular = 0
     # find intersection_point as "b1 + fraction of delta_b"
     delta_s = a1-b1
-    delta_a_perp = rotate_vector_right_angle(delta_a)
+    delta_a_perp = rotate_vector_to_left_by_90_deg(delta_a)
 
     denom = np.dot( delta_a_perp, delta_b )
     num = np.dot( delta_a_perp, delta_s )

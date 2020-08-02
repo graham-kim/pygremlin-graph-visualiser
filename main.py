@@ -5,11 +5,11 @@ import model
 if __name__ == '__main__':
     mgr = model.FormationManager()
     n1 = mgr.add_node("abc\nwiga", (400,300), "red", multibox=True)
-    n2 = mgr.add_node("def", (300,200), "green")
-    mgr.add_link(n1, n2, "blue", ArrowDraw.FWD_ARROW)
+    n2 = mgr.add_node("def", (200,100), "green")
+    mgr.add_dual_link(n1, n2, "blue", "red")
 
     children = mgr.add_depth_line_of_linked_nodes( \
-        n2, dir_coord=(300,500), link_length=200, node_specs=[
+        n2, dir_coord=mgr.pos_of(n2)+(0,1), link_length=200, node_specs=[
             NodeSpec("ghi", node_col="red", link_col="pink", link_draw=ArrowDraw.FWD_ARROW),
             NodeSpec("jkl", node_col="green", link_col="pink", link_draw=ArrowDraw.FWD_ARROW),
             NullNode(link_col="pink", link_draw=ArrowDraw.DOUBLE_ARROW)
