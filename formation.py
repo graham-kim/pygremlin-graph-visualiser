@@ -7,13 +7,14 @@ import numpy as np
 import typing as tp
 import angles
 
-from model import Node, Link
+from model import Node, Link, Label
 from spec import ArrowDraw, NodeSpec
 
 class FormationManager:
     def __init__(self):
         self._nodes = {}
         self._links = []
+        self._labels = []
 
     @property
     def nodes(self) -> tp.List[Node]:
@@ -23,6 +24,10 @@ class FormationManager:
     def links(self) -> tp.List[Link]:
         return self._links
 
+    @property
+    def labels(self) -> tp.List[Link]:
+        return self._labels
+
     def pos_of(self, node_id: int) -> np.array:
         return np.array(self._nodes[node_id].pos)
 
@@ -31,6 +36,9 @@ class FormationManager:
         new_id = id(new_node)
         self._nodes[new_id] = new_node
         return new_id
+
+    def add_label(self, text: str, pos: tp.Tuple[int, int], colour: str):
+        self._labels.append( Label(text, pos, colour) )
 
     def add_link(self, from_id: int, to_id: int, colour: str, arrow_draw: ArrowDraw, link_2_col: tp.Optional[str]):
         self._links.append( Link(from_id, to_id, colour, arrow_draw, link_2_col) )

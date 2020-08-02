@@ -24,3 +24,12 @@ class Link:
 
         if second_colour is not None and arrow_draw != ArrowDraw.DUAL_LINK:
             raise ValueError("second_colour is not None yet arrow_draw is not DUAL_LINK")
+
+class Label:
+    """
+    Nodes that are drawn under (instead of over) everything else.
+    """
+    def __init__(self, text: str, pos: tp.Tuple[int, int], colour: str):
+        self.text = text
+        self.pos = pos
+        self.colour = colour

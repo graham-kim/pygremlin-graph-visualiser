@@ -8,12 +8,11 @@ import model
 import config as cfg
 
 class Canvas:
-    def __init__(self, nodes: tp.List[model.Node], links: tp.List[model.Link]):
+    def __init__(self, nodes: tp.List[model.Node], links: tp.List[model.Link], labels: tp.List[model.Label]):
         self.fps = 30
         self.screen_size = cfg.screen_size
 
         pygame.init()
-        self.translator = ModelToViewTranslator(nodes, links, self.screen_size)
         self.fps_clock = pygame.time.Clock()
 
         # --- Pygame Surface Setup
@@ -23,11 +22,13 @@ class Canvas:
         # Background: a white rectangle the size of the screen
         self.default_background = pygame.Surface(self.display_surf.get_size()).convert()
         self.default_background.fill((255, 255, 255))
+
+        self.translator = ModelToViewTranslator(nodes, links, labels, self.screen_size)
         self.refresh_display()
 
     def refresh_display(self):
         self.display_surf.blit(self.default_background, (0, 0))
-        self.translator._draw_links_then_nodes(self.display_surf)
+        self.translator._draw_labels_links_then_nodes(self.display_surf)
 
     def main_loop(self):
         running = True

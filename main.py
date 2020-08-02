@@ -6,6 +6,7 @@ if __name__ == '__main__':
     mgr = FormationManager()
     n1 = mgr.add_node("abc\nwiga", (400,300), "red", multibox=True)
     n2 = mgr.add_node("def", (200,100), "green")
+    mgr.add_label("waha", (200,200), "red")
     mgr.add_dual_link(n1, n2, "blue", "red")
 
     children = mgr.add_depth_line_of_linked_nodes( \
@@ -36,5 +37,5 @@ if __name__ == '__main__':
             NodeSpec("jj", node_col="purple", link_col="lime", link_draw=ArrowDraw.FWD_ARROW)
         ])
 
-    c = Canvas(mgr.nodes, mgr.links)
+    c = Canvas(mgr.nodes, mgr.links, mgr.labels)
     c.main_loop()

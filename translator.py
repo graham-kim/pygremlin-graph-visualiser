@@ -37,12 +37,13 @@ def line_within_bounds(display_surface_size: tp.Tuple[int, int], \
 
 class ModelToViewTranslator:
     def __init__(self, nodes: tp.List[model.Node], links: tp.List[model.Link], \
-                 screen_size: tp.Tuple[int, int]):
+                 labels: tp.List[model.Label], screen_size: tp.Tuple[int, int]):
         self._big_font = pygame.font.SysFont("Arial", cfg.big_font_size)
         self._small_font = pygame.font.SysFont("Arial", cfg.small_font_size)
         self._tiny_font = pygame.font.SysFont("Arial", cfg.tiny_font_size)
         self._nodes = {}
         self._links = []
+        self._labels = []
         self.rect_within_bounds = partial(rect_within_bounds, screen_size)
         self.line_within_bounds = partial(line_within_bounds, screen_size)
 
@@ -83,6 +84,18 @@ class ModelToViewTranslator:
                                bounds_check=self.line_within_bounds)
             self._links.append(render_link)
 
+        for model_label in labels:
+            render_node = Node(model_label.text,
+                               self._big_font,
+                               self._small_font,
+                               self._tiny_font,
+                               pos=model_label.pos,
+                               colour=self._get_colours(model_label.colour)[1],
+                               background=(255,255,255),
+                               bounds_check=self.rect_within_bounds,
+                               multibox=False)
+            self._labels.append(render_node)
+
     def _get_colours(self, colour_str: str) -> tp.Tuple[tp.Tuple[int, int, int], \
                                                             tp.Tuple[int, int, int]]:
         if colour_str not in cfg.colour_set.keys():
@@ -91,7 +104,10 @@ class ModelToViewTranslator:
         colours = cfg.colour_set[colour_str]
         return colours.text_col, colours.box_col
 
-    def _draw_links_then_nodes(self, surface):
+    def _draw_labels_links_then_nodes(self, surface):
+        for label in self._labels:
+            label.draw_on(surface)
+
         for link in self._links:
             link.draw_on(surface)
 
