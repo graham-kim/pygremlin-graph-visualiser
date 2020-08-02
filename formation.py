@@ -54,7 +54,8 @@ class FormationManager:
     def add_label(self, text: str, pos: tp.Tuple[int, int], colour: str):
         self._labels.append( Label(text, pos, colour) )
 
-    def add_link(self, from_id: int, to_id: int, colour: str, arrow_draw: ArrowDraw, link_2_col: tp.Optional[str]):
+    def add_link(self, from_id: int, to_id: int, colour: str, arrow_draw: ArrowDraw = ArrowDraw.FWD_ARROW, \
+                 link_2_col: tp.Optional[str] = None):
         self._links.append( Link(from_id, to_id, colour, arrow_draw, link_2_col) )
 
     def add_dual_link(self, from_id: int, to_id: int, colour: str, second_colour: str):
