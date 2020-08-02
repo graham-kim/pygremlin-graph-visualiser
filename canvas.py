@@ -3,7 +3,7 @@ from pygame.locals import *
 import typing as tp
 from datetime import datetime
 
-import render
+from translator import ModelToViewTranslator
 import model
 import config as cfg
 
@@ -13,7 +13,7 @@ class Canvas:
         self.screen_size = cfg.screen_size
 
         pygame.init()
-        self.translator = render.ModelToViewTranslator(nodes, links, self.screen_size)
+        self.translator = ModelToViewTranslator(nodes, links, self.screen_size)
         self.fps_clock = pygame.time.Clock()
 
         # --- Pygame Surface Setup
