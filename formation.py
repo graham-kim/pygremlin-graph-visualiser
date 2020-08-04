@@ -66,15 +66,14 @@ class FormationManager:
         self.add_link(from_id, new_id, spec.link_col, spec.link_draw, spec.link_2_col)
         return new_id
 
-    def add_depth_line_of_linked_nodes(self, start_id: int, dir_coord: tp.Tuple[int, int], \
+    def add_depth_line_of_linked_nodes(self, start_id: int, dir: tp.Tuple[int, int], \
                                        link_length: int, \
                                        node_specs: tp.List[tp.Optional[NodeSpec]] \
                                        ) -> tp.List[int]:
 
         added_ids = []
         start_pos = angles.vec2(self._nodes[start_id].pos)
-        dir_vec2 = angles.vec2(dir_coord)
-        unit_dir = angles.unit( dir_vec2 - start_pos )
+        unit_dir = angles.unit( dir )
 
         count = 1
         from_id = start_id
@@ -92,6 +91,24 @@ class FormationManager:
                 from_id = new_id
             count += 1
 
+        return added_ids
+
+    def add_rail_of_nodes(self, start_coord: tp.Tuple[int, int], dir: tp.Tuple[int, int], \
+                          link_length: int, \
+                          node_specs: tp.List[tp.Optional[NodeSpec]] \
+                          ) -> tp.List[int]:
+        num_specs = len(node_specs)
+        if num_specs < 2:
+            raise ValueError("node_specs must have at least 2 elements")
+        if node_specs[0] is None or node_specs[-1] is None:
+            raise ValueError("The first and last item of node_specs must not be None")
+
+        first_id = self.add_node(node_specs[0].text, start_coord, \
+                                 node_specs[0].node_col, node_specs[0].multibox)
+        added_ids = [first_id]
+        new_ids = self.add_depth_line_of_linked_nodes(first_id, dir, link_length, node_specs[1:])
+
+        added_ids.extend(new_ids)
         return added_ids
 
     def add_breadth_line_of_sibling_nodes(self, parent_id: int, start_coord: tp.Tuple[int, int], \

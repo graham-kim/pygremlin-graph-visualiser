@@ -9,7 +9,7 @@ if __name__ == '__main__':
     mgr.add_dual_link(n1, n2, "blue", "red")
 
     children = mgr.add_depth_line_of_linked_nodes( \
-        n2, dir_coord=mgr.pos_of(n2)+(0,1), link_length=200, node_specs=[
+        n2, dir=(0,1), link_length=200, node_specs=[
             NodeSpec("ghi", node_col="red", link_col="pink", link_draw=ArrowDraw.FWD_ARROW),
             NodeSpec("jkl", node_col="green", link_col="pink", link_draw=ArrowDraw.FWD_ARROW),
             NullNode(link_col="pink", link_draw=ArrowDraw.DOUBLE_ARROW)
@@ -36,6 +36,12 @@ if __name__ == '__main__':
             NodeSpec("gg", node_col="navy", link_col="lime", link_draw=ArrowDraw.BACK_ARROW),
             NodeSpec("ii", node_col="teal", link_col="lime", link_draw=ArrowDraw.NO_LINK),
             NodeSpec("jj", node_col="purple", link_col="lime", link_draw=ArrowDraw.FWD_ARROW)
+        ])
+
+    mgr.add_rail_of_nodes(start_coord=(70,100), dir=(0,1), link_length=100, node_specs=[ \
+            NodeSpec("ab"),
+            NodeSpec("bc"),
+            NodeSpec("cd")
         ])
 
     c = Canvas(mgr.nodes, mgr.links, mgr.labels)
