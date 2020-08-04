@@ -45,20 +45,20 @@ class FormationManager:
 
         return (from_vec2 + rel_vec2 / 2 + rotated_dir * shift_breadth).astype(int)
 
-    def add_node(self, text: str, pos: tp.Tuple[int, int], colour: str, multibox: bool = False) -> int:
+    def add_node(self, text: str, pos: tp.Tuple[int, int], colour: str="green", multibox: bool = False) -> int:
         new_node = Node(text, pos, colour, multibox)
         new_id = id(new_node)
         self._nodes[new_id] = new_node
         return new_id
 
-    def add_label(self, text: str, pos: tp.Tuple[int, int], colour: str):
+    def add_label(self, text: str, pos: tp.Tuple[int, int], colour: str="red"):
         self._labels.append( Label(text, pos, colour) )
 
-    def add_link(self, from_id: int, to_id: int, colour: str, arrow_draw: ArrowDraw = ArrowDraw.FWD_ARROW, \
+    def add_link(self, from_id: int, to_id: int, colour: str="black", arrow_draw: ArrowDraw = ArrowDraw.FWD_ARROW, \
                  link_2_col: tp.Optional[str] = None):
         self._links.append( Link(from_id, to_id, colour, arrow_draw, link_2_col) )
 
-    def add_dual_link(self, from_id: int, to_id: int, colour: str, second_colour: str):
+    def add_dual_link(self, from_id: int, to_id: int, colour: str="black", second_colour: str="black"):
         self.add_link(from_id, to_id, colour, ArrowDraw.DUAL_LINK, second_colour)
 
     def add_linked_node(self, from_id: int, pos: tp.Tuple[int, int], spec: NodeSpec) -> int:

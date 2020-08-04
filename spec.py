@@ -11,7 +11,7 @@ class ArrowDraw(Enum):
     DUAL_LINK = 5
 
 class NodeSpec:
-    def __init__(self, text: str, node_col: str, link_col: str, link_draw: ArrowDraw, \
+    def __init__(self, text: str, node_col: str="green", link_col: str="black", link_draw: ArrowDraw=ArrowDraw.FWD_ARROW, \
                  link_2_col: tp.Optional[str]=None, multibox: bool=False):
         self.text = text
         self.node_col = node_col
@@ -21,7 +21,7 @@ class NodeSpec:
         self.multibox = multibox
 
 class NullNode(NodeSpec):
-    def __init__(self, link_col: str, link_draw: ArrowDraw):
+    def __init__(self, link_col: str="black", link_draw: ArrowDraw=ArrowDraw.NO_ARROW):
         self.text = ""
         self.node_col = "black" # gets ignored
         self.link_col = link_col
