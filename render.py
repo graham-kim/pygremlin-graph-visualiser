@@ -137,7 +137,7 @@ class Node:
         It's up to the caller to flip the results if the link is actually the reverse.
         """
         if self._current_text_surface is None:
-            return 0, self.center
+            return 0, np.array(self.center)
 
         box_bounds = self.box_bounds
 
