@@ -24,13 +24,14 @@ colour_set = {
     "red": ColourPair((255,0,0), (0,0,0)),
     "orange": ColourPair((255,128,0), (0,0,0)),
     "yellow": ColourPair((255,255,0), (0,0,0)),
-    "lime": ColourPair((128,255,0), (0,0,0)),
-    "green": ColourPair((0,255,0), (0,0,0)),
+    "lime": ColourPair((192,255,0), (0,0,0)),
+    "green": ColourPair((0,220,0), (0,0,0)),
     "teal": ColourPair((0,255,255), (0,0,0)),
     "blue": ColourPair((0,128,255), (0,0,0)),
     "navy": ColourPair((0,0,255), (255,255,255)),
     "black": ColourPair((0,0,0), (255,255,255)),
     "purple": ColourPair((128,0,255), (255,255,255)),
     "magenta": ColourPair((255,0,255), (0,0,0)),
-    "pink": ColourPair((255,128,255), (255,255,255))
+    "pink": ColourPair((255,128,255), (255,255,255)),
+    "white": ColourPair((255,255,255), (0,0,0))
 }

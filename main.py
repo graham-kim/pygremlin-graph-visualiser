@@ -4,7 +4,7 @@ from formation import FormationManager
 
 if __name__ == '__main__':
     mgr = FormationManager()
-    n1 = mgr.add_node("abc\nwiga", (400,300), "red", multibox=True)
+    n1 = mgr.add_node("abc\nwiga", (400,300), "lime", multibox=True)
     n2 = mgr.add_node("def", (200,100), "green")
     mgr.add_dual_link(n1, n2, "blue", "red")
 
