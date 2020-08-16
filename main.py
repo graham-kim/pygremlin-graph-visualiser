@@ -15,7 +15,8 @@ if __name__ == '__main__':
             NullNode(link_col="pink", link_draw=ArrowDraw.DOUBLE_ARROW)
         ])
 
-    mgr.add_label("waha", mgr.pos_perp_to(n2, children[0], 200, to_left=False), "red")
+    id = mgr.id_of
+    mgr.add_label("waha", mgr.pos_perp_to(n2, id("ghi"), 200, to_left=False), "red")
 
     n3 = mgr.add_linked_node(children[0], (600,500), NodeSpec("xyz", node_col="green", link_col="purple", \
                              link_draw=ArrowDraw.DUAL_LINK, link_2_col="orange"))

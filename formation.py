@@ -45,6 +45,19 @@ class FormationManager:
 
         return (from_vec2 + rel_vec2 / 2 + rotated_dir * shift_breadth).astype(int)
 
+    def id_of(self, text: str) -> int:
+        ans = []
+        for key in self._nodes.keys():
+            if text == self._nodes[key].text:
+                ans.append(key)
+
+        if len(ans) == 0:
+            raise ValueError("No node has this text: {}".format(text))
+        elif len(ans) == 1:
+            return ans[0]
+        else:
+            raise ValueError("More than one node has the text {}: {}".format(text, ans))
+
     def add_node(self, text: str, pos: tp.Tuple[int, int], colour: str="green", multibox: bool = False) -> int:
         new_node = Node(text, pos, colour, multibox)
         new_id = id(new_node)
