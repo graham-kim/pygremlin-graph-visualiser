@@ -9,7 +9,7 @@ if __name__ == '__main__':
     mgr.add_dual_link(n1, n2, "blue", "red")
 
     children = mgr.add_depth_line_of_linked_nodes( \
-        n2, dir=(0,1), link_length=200, node_specs=[
+        "def", dir=(0,1), link_length=200, node_specs=[
             NodeSpec("ghi", node_col="red", link_col="pink", link_draw=ArrowDraw.FWD_ARROW),
             NodeSpec("jkl", node_col="green", link_col="pink", link_draw=ArrowDraw.FWD_ARROW),
             NullNode(link_col="pink", link_draw=ArrowDraw.DOUBLE_ARROW)
@@ -22,7 +22,7 @@ if __name__ == '__main__':
                              link_draw=ArrowDraw.DUAL_LINK, link_2_col="orange"))
 
     mgr.add_breadth_line_of_sibling_nodes( \
-        n3, start_coord=(800,700), end_coord=(800,300), node_specs=[
+        "xyz", start_coord=(800,700), end_coord=(800,300), node_specs=[
             NodeSpec("aaa", node_col="red", link_col="teal", link_draw=ArrowDraw.DOUBLE_ARROW),
             NodeSpec("bbb", node_col="red", link_col="teal", link_draw=ArrowDraw.DOUBLE_ARROW),
             None,

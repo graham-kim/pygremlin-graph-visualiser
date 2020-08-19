@@ -28,7 +28,20 @@ class FormationManager:
     def labels(self) -> tp.List[Link]:
         return self._labels
 
-    def pos_of(self, node_id: int) -> np.array:
+    def _id_if_str(self, node: tp.Tuple[str, int]) -> int:
+        if isinstance(node, int):
+            return node
+        else:
+            return self.id_of(node)
+
+    def text_of(self, node_id: int) -> str:
+        if not isinstance(node_id, int):
+            raise TypeError("Expected node_id to be int: {}".format(node_id))
+
+        return self._nodes[node_id].text
+
+    def pos_of(self, node_id: tp.Tuple[str, int]) -> np.array:
+        node_id = self._id_if_str(node_id)
         return np.array(self._nodes[node_id].pos)
 
     def pos_perp_to(self, from_id: int, to_id: int, shift_breadth: int, to_left: bool) -> np.array:
@@ -46,6 +59,9 @@ class FormationManager:
         return (from_vec2 + rel_vec2 / 2 + rotated_dir * shift_breadth).astype(int)
 
     def id_of(self, text: str) -> int:
+        if not isinstance(text, str):
+            raise TypeError("{} should be a string".format(text))
+
         ans = []
         for key in self._nodes.keys():
             if text == self._nodes[key].text:
@@ -67,24 +83,26 @@ class FormationManager:
     def add_label(self, text: str, pos: tp.Tuple[int, int], colour: str="red"):
         self._labels.append( Label(text, pos, colour) )
 
-    def add_link(self, from_id: int, to_id: int, colour: str="black", arrow_draw: ArrowDraw = ArrowDraw.FWD_ARROW, \
-                 link_2_col: tp.Optional[str] = None):
-        self._links.append( Link(from_id, to_id, colour, arrow_draw, link_2_col) )
+    def add_link(self, from_id: tp.Tuple[str, int], to_id: tp.Tuple[str, int], colour: str="black", \
+                 arrow_draw: ArrowDraw = ArrowDraw.FWD_ARROW, link_2_col: tp.Optional[str] = None):
+        self._links.append( Link(self._id_if_str(from_id), self._id_if_str(to_id), colour, arrow_draw, link_2_col) )
 
-    def add_dual_link(self, from_id: int, to_id: int, colour: str="black", second_colour: str="black"):
+    def add_dual_link(self, from_id: tp.Tuple[str, int], to_id: tp.Tuple[str, int], colour: str="black", \
+                      second_colour: str="black"):
         self.add_link(from_id, to_id, colour, ArrowDraw.DUAL_LINK, second_colour)
 
-    def add_linked_node(self, from_id: int, pos: tp.Tuple[int, int], spec: NodeSpec) -> int:
+    def add_linked_node(self, from_id: tp.Tuple[str, int], pos: tp.Tuple[int, int], spec: NodeSpec) -> int:
         new_id = self.add_node(spec.text, pos, spec.node_col, spec.multibox)
         self.add_link(from_id, new_id, spec.link_col, spec.link_draw, spec.link_2_col)
         return new_id
 
-    def add_depth_line_of_linked_nodes(self, start_id: int, dir: tp.Tuple[int, int], \
+    def add_depth_line_of_linked_nodes(self, start_id: tp.Tuple[str, int], dir: tp.Tuple[int, int], \
                                        link_length: int, \
                                        node_specs: tp.List[tp.Optional[NodeSpec]] \
                                        ) -> tp.List[int]:
 
         added_ids = []
+        start_id = self._id_if_str(start_id)
         start_pos = angles.vec2(self._nodes[start_id].pos)
         unit_dir = angles.unit( dir )
 
@@ -124,12 +142,13 @@ class FormationManager:
         added_ids.extend(new_ids)
         return added_ids
 
-    def add_breadth_line_of_sibling_nodes(self, parent_id: int, start_coord: tp.Tuple[int, int], \
+    def add_breadth_line_of_sibling_nodes(self, parent_id: tp.Tuple[str, int], start_coord: tp.Tuple[int, int], \
                                           end_coord: tp.Tuple[int, int], \
                                           node_specs: tp.List[tp.Optional[NodeSpec]] \
                                           ) -> tp.List[int]:
 
         num_specs = len(node_specs)
+        parent_id = self._id_if_str(parent_id)
         if num_specs < 2:
             raise ValueError("node_specs must have at least 2 elements")
         if node_specs[0] is None or node_specs[-1] is None:
@@ -155,11 +174,12 @@ class FormationManager:
 
         return added_ids
 
-    def add_arc_of_sibling_nodes(self, parent_id: int, radius: int, start_dir_coord: tp.Tuple[int, int], \
+    def add_arc_of_sibling_nodes(self, parent_id: tp.Tuple[str, int], radius: int, start_dir_coord: tp.Tuple[int, int], \
                                  end_dir_coord: tp.Tuple[int, int], clockwise: bool, \
                                  node_specs: tp.List[tp.Optional[NodeSpec]] \
                                  ) -> tp.List[int]:
 
+        parent_id = self._id_if_str(parent_id)
         num_specs = len(node_specs)
         if num_specs < 2:
             raise ValueError("node_specs must have at least 2 elements")
