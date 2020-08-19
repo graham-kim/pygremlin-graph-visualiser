@@ -96,6 +96,20 @@ class FormationManager:
         self.add_link(from_id, new_id, spec.link_col, spec.link_draw, spec.link_2_col)
         return new_id
 
+    def add_daisy_chain_links(self, nodes: tp.List[tp.Tuple[str, int]], arrow_draw: ArrowDraw = ArrowDraw.FWD_ARROW, \
+                              link_col: str="black", link_2_col: tp.Optional[str] = None):
+        if not isinstance(nodes, list):
+            raise TypeError("Expected a list for nodes: {}".format(nodes))
+
+        if len(nodes) < 2:
+            raise ValueError("Expected at least 2 nodes, got {}".format(len(nodes)))
+
+        for i, item in enumerate(nodes[1:]):
+            prev_node = self._id_if_str(nodes[i]) # i is already the previous index
+            this_node = self._id_if_str(item)
+
+            self.add_link(prev_node, this_node, link_col, arrow_draw, link_2_col)
+
     def add_depth_line_of_linked_nodes(self, start_id: tp.Tuple[str, int], dir: tp.Tuple[int, int], \
                                        link_length: int, \
                                        node_specs: tp.List[tp.Optional[NodeSpec]] \

@@ -45,5 +45,7 @@ if __name__ == '__main__':
             NodeSpec("cd")
         ])
 
+    mgr.add_daisy_chain_links(["ccc", "dd", "bbb", "jkl"])
+
     c = Canvas(mgr.nodes, mgr.links, mgr.labels)
     c.main_loop()
