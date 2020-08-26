@@ -47,5 +47,11 @@ if __name__ == '__main__':
 
     mgr.add_daisy_chain_links(["ccc", "dd", "bbb", "jkl"])
 
+    mgr.add_breadth_line_centered_on("def", center_coord=(200,-60), link_length=100, node_specs=[
+            NodeSpec("a1"),
+            NodeSpec("a2"),
+            NodeSpec("a3")
+        ])
+
     c = Canvas(mgr.nodes, mgr.links, mgr.labels)
     c.main_loop()

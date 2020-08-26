@@ -188,6 +188,25 @@ class FormationManager:
 
         return added_ids
 
+    def add_breadth_line_centered_on(self, parent_id: tp.Tuple[str, int], center_coord: tp.Tuple[int, int], \
+                                     link_length: int, node_specs: tp.List[tp.Optional[NodeSpec]] \
+                                     ) -> tp.List[int]:
+        num_specs = len(node_specs)
+        if num_specs < 2:
+            raise ValueError("node_specs must have at least 2 elements")
+
+        parent_pos = self.pos_of(parent_id)
+        rel_vec2 = angles.vec2(center_coord) - parent_pos
+        rotated_vec2 = angles.rotate_vector_to_left_by_90_deg(angles.unit(rel_vec2))
+
+        half_total_length = link_length * float(num_specs-1) / 2.0
+
+        start_coord = center_coord + rotated_vec2 * half_total_length
+        end_coord   = center_coord - rotated_vec2 * half_total_length
+        
+        return self.add_breadth_line_of_sibling_nodes(parent_id, start_coord, end_coord, node_specs)
+            
+
     def add_arc_of_sibling_nodes(self, parent_id: tp.Tuple[str, int], radius: int, start_dir_coord: tp.Tuple[int, int], \
                                  end_dir_coord: tp.Tuple[int, int], clockwise: bool, \
                                  node_specs: tp.List[tp.Optional[NodeSpec]] \
