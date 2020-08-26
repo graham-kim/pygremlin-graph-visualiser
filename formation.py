@@ -197,7 +197,9 @@ class FormationManager:
 
         parent_pos = self.pos_of(parent_id)
         rel_vec2 = angles.vec2(center_coord) - parent_pos
-        rotated_vec2 = angles.rotate_vector_to_left_by_90_deg(angles.unit(rel_vec2))
+        rotated_vec2 = angles.flip_y( \
+            angles.rotate_vector_to_left_by_90_deg( \
+                angles.flip_y( angles.unit(rel_vec2) )))
 
         half_total_length = link_length * float(num_specs-1) / 2.0
 
